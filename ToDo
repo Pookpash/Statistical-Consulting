@@ -1,0 +1,16 @@
+1. Variablen kodieren
+
+sealID - auf 1 bis 21 ändern
+species - 0 und 1 (1=Grey Seal)
+datetime - trennen (datum und Uhrzeit)
+start.lat - ok 
+start.lon - ok 
+end.lat - ok
+end.lon - ok
+surf.dur - ok [sec]
+dive.dur - ok [sec]
+max.depth - ok [m]
+sex - 0 und 1 (1= female)
+dist2coast - ok [m]
+water.temp - ok [°C]
+
