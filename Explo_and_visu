@@ -16,7 +16,7 @@
 #   3.2 visualize movement                #
 #   3.3 histograms of different variables #
 #   3.4 correlation matrices              #
-#   3.5 ACF's                             #
+#   3.5 ACF's
 # Appendix (UDF's)                        #
 
 ### 1. load data and packages
@@ -68,7 +68,6 @@ seal21 <- seals[which(seals$sealID=="21"),]
 # grey: 10, harbour: 21
 
 ## 3.2 visualize movement of all seals(first 1000 datapoints ~200 days)
-par(mfrow=c(2,1))
 plotSat(data=seal1[1:1000,], zoom= 10, col ="yellow")
 plotSat(data=seal2[1:1000,], zoom= 10, col ="yellow")
 plotSat(data=seal3[1:1000,], zoom= 10, col ="yellow")
@@ -134,7 +133,7 @@ for (i in seallist){
 ## 3.4 correlation matrices
 
 #correlation matrix for all seals
-cormat <- round(cor(seals[,7:12]),2)
+cormat <- round(cor(seals[,7:13]),2)
 cormat <- reorder_cormat(cormat)
 upper_tri <- get_upper_tri(cormat)
 melted_cormat <- melt(upper_tri, na.rm = TRUE)
@@ -144,7 +143,7 @@ print(cormatplot)
 fin_corplot(ggheatmap=cormatplot)
 
 ##correlation matrix seal 1 -4
-seal1_red <- seal1[,7:12]               #reduce matrix 
+seal1_red <- seal1[,7:13]               #reduce matrix 
 seal1_red <- seal1_red[,-4]             #in addition to above we need to remove sex bc we are looking at an individual
 cormat1 <- round(cor(seal1_red),2)
 cormat1 <- reorder_cormat(cormat1)
@@ -153,7 +152,7 @@ melted_cormat1 <- melt(upper_tri1, na.rm = TRUE)
 cormatplot1<- ggheatmap(mc=melted_cormat1)
 s1_cor<-fin_corplot(ggheatmap=cormatplot1)
 
-seal2_red <- seal2[,7:12]
+seal2_red <- seal2[,7:13]
 seal2_red <- seal2_red[,-4]
 cormat2 <- round(cor(seal2_red),2)
 cormat2 <- reorder_cormat(cormat2)
@@ -162,7 +161,7 @@ melted_cormat2 <- melt(upper_tri2, na.rm = TRUE)
 cormatplot2<- ggheatmap(mc=melted_cormat2)
 s2_cor<-fin_corplot(ggheatmap=cormatplot2)
 
-seal3_red <- seal3[,7:12]
+seal3_red <- seal3[,7:13]
 seal3_red <- seal3_red[,-4]
 cormat3 <- round(cor(seal3_red),2)
 cormat3 <- reorder_cormat(cormat3)
@@ -171,7 +170,7 @@ melted_cormat3 <- melt(upper_tri3, na.rm = TRUE)
 cormatplot3<- ggheatmap(mc=melted_cormat3)
 s3_cor<-fin_corplot(ggheatmap=cormatplot3)
 
-seal4_red <- seal4[,7:12]
+seal4_red <- seal4[,7:13]
 seal4_red <- seal4_red[,-4]
 cormat4 <- round(cor(seal4_red),2)
 cormat4 <- reorder_cormat(cormat4)
