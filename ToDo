@@ -1,4 +1,17 @@
-1. Variablen kodieren
+erledigte Aufgaben stehen unten, neue unerledigte oben.
+
+Version: 2016_10_30_TW
+
+Unerledigt:
+
+Start und Endpunkte der Robben in Schrittlänge umrechnen
+
+
+-----------------------------------------------
+
+Erledigt:
+
+Variablen kodieren (done, siehe data cleaning)
 
 sealID - auf 1 bis 21 ändern
 species - 0 und 1 (1=Grey Seal)
