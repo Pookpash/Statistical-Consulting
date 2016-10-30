@@ -3,7 +3,7 @@
 
 # aktuellste Versionen:
 
-Cleaning: 30.10
-Explo: 30.10
-ToDo: 30.10
-Analysis: -
+Cleaning: 30.10 
+Explo: 30.10 
+ToDo: 30.10 
+Analysis: - 
