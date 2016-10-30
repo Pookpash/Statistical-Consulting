@@ -11,6 +11,9 @@ Start und Endpunkte der Robben in Schrittlänge umrechnen
 
 Erledigt:
 
+Start und Endpunkte der Robben in Schrittlänge umrechnen (30.10 23:42 done, die Skripte data cleaning 
+und exploration wurden deswege auch noch mal geupdatet, da noch eine column hinzugekommen ist!)
+
 Variablen kodieren (done, siehe data cleaning)
 
 sealID - auf 1 bis 21 ändern
