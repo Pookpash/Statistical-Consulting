@@ -9,6 +9,14 @@ Schrittlängenformel überprüfen! (ist einfach aus dem Internet übernommen)
 
 -----------------------------------------------
 
+Fragen:
+1. Die Datenpunkte liegen unterschiedlich weit auseinander. Warum? Entweder es gab einen Auslöser (z.B. Tauchvorgang), oder die Punkte
+   sindzufällig gemessen. In beiden Fällen bleibt die Frage, wie Surface Duration dann überhaupt zu interpretieren ist.
+2. Die Robben scheinen hin und wieder Zeit an Land zu verbringen. Soweit so gut. Nur hat das Datenset keine NA's. Wie soll die Robbe an
+   Land getaucht sein?
+
+-----------------------------------------------
+
 Erledigt:
 
 Start und Endpunkte der Robben in Schrittlänge umrechnen (30.10 23:42 done, die Skripte data cleaning 
