@@ -1,4 +1,4 @@
-#14.11.2016_SM
+#2016_11_14_SM
 
 setwd("C:/Users/User/Documents/Studium_MA/3. Semester/Statistical Consulting/R")
 seal_clean <- read.csv("seal_data_cleaned.csv")
