@@ -1,1 +1,53 @@
-#Analysis v1.0
+#14.11.2016_SM
+
+setwd("C:/Users/User/Documents/Studium_MA/3. Semester/Statistical Consulting/R")
+seal_clean <- read.csv("seal_data_cleaned.csv")
+View(seal_clean)
+
+### Daten für eine Robbe
+seal1 <- seal_clean[seal_clean$sealID==1, ]
+View(seal1)
+
+
+mllk <- function(theta,x){
+  a <- theta[1:2]
+  b <- theta[3:4]
+  Gamma <- diag(theta[5:6])
+  Gamma[1,2] <- 1-Gamma[1,1]
+  Gamma[2,1] <- 1-Gamma[2,2]
+  delta <- solve(t(diag(2)-Gamma+1),c(1,1)) 
+  T <- length(x)
+  u <- delta%*%diag(dgamma(x[1],shape=a,scale=b))
+  l <- log(sum(u))
+  phi <- u/sum(u)
+  for (t in 2:T){
+    u <- phi%*%Gamma%*%diag(dgamma(x[t],shape=a,scale=b))
+    l <- l+log(sum(u))
+    phi <- u/sum(u)
+  }
+  return(-l)
+}
+
+mod1 <- nlminb(c(200,100,4,6,0.5,0.5),mllk,x=seal1$steplen[1:100],control=list(trace=1),lower=c(0,0,0,0,0,0),upper=c(Inf,Inf,Inf,Inf,1,1))
+mod1
+
+calcres <- function(reps=20){
+  df <- data.frame()
+  for (i in 1:reps){
+    a0 <- runif(2,100,400)
+    b0 <- runif(2,3,8)
+    gamma <- runif(2,0,1)
+    mod2 <- nlminb(c(a0,b0,gamma),mllk,x=seal1$steplen[1:1000],control=list(trace=1),lower=c(0,0,0,0,0,0),upper=c(Inf,Inf,Inf,Inf,0.9999,0.9999))
+    print(mod2$par)
+    print(c(mod2$par[1]*mod2$par[3],mod2$par[2]*mod2$par[4],mod2$par[1]*mod2$par[3]^2,mod2$par[2]*mod2$par[4]^2))
+    df[i,1] <- -mod2$objective 
+    df[i,2] <- mod2$par[1]*mod2$par[3]
+    df[i,3] <- mod2$par[2]*mod2$par[4]
+    df[i,4] <- sqrt(mod2$par[1]*mod2$par[3]^2)
+    df[i,5] <- sqrt(mod2$par[2]*mod2$par[4]^2)
+  }
+  return(df)
+}
+
+results <- calcres(reps=20)
+results
