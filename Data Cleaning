@@ -1,7 +1,7 @@
-#2016_10_30_TW
+#2016_11_14_TW
 
 ### load packages and set wd
-setwd("C:/Users/Pook/Documents/Robben") #change as needed
+setwd("C:/Users/Admin/Documents/Robben") #change as needed
 require(reshape)
 
 ### load original data
@@ -80,9 +80,11 @@ earth.dist <- function (long1, lat1, long2, lat2)
         return(d)
 }
 steplen <-earth.dist(long1=data[,7],lat1=data[,6],long2=data[,9],lat2=data[,8])
-steplen <- steplen *1000 # convert to meters
+steplen <- round(steplen *1000,2) # convert to meters
 data[,16] <- steplen
 colnames(data)[colnames(data) == "V16"] <- "steplen"
+
+data[,15] <- round(data[,15],2)
 
 ### create csv
 #write to new csv-file to prevent repeating the steps above everytime
@@ -90,4 +92,4 @@ write.csv(data, file = "seal_data_cleaned.csv")
 
 #test new csv-file
 seal_clean <- read.csv("seal_data_cleaned.csv")
-View(seal_clean) #looks good, "X" column can be dropped in further analysis (discussion)
+View(seal_clean) #looks good, "X" column can be dropped in further analysis(discussion)
