@@ -1,53 +1,48 @@
-#2016_11_14_SM
+#2016_11_21_TW
 
-setwd("C:/Users/User/Documents/Studium_MA/3. Semester/Statistical Consulting/R")
+setwd("C:/Users/Admin/Documents/Robben")
 seal_clean <- read.csv("seal_data_cleaned.csv")
-View(seal_clean)
+seal1 <- seal_clean[which(seal_clean$sealID=="1"),]
 
-### Daten für eine Robbe
-seal1 <- seal_clean[seal_clean$sealID==1, ]
-View(seal1)
-
-
-mllk <- function(theta,x){
-  a <- theta[1:2]
-  b <- theta[3:4]
-  Gamma <- diag(theta[5:6])
-  Gamma[1,2] <- 1-Gamma[1,1]
-  Gamma[2,1] <- 1-Gamma[2,2]
-  delta <- solve(t(diag(2)-Gamma+1),c(1,1)) 
-  T <- length(x)
-  u <- delta%*%diag(dgamma(x[1],shape=a,scale=b))
-  l <- log(sum(u))
-  phi <- u/sum(u)
-  for (t in 2:T){
-    u <- phi%*%Gamma%*%diag(dgamma(x[t],shape=a,scale=b))
-    l <- l+log(sum(u))
-    phi <- u/sum(u)
-  }
-  return(-l)
+mllk2 <- function(thetaworking,x){
+        mu <- exp(thetaworking[1:2])
+        sig <- exp(thetaworking[3:4])
+        Gamma <- diag(plogis(thetaworking[5:6]))
+        Gamma[1,2] <- 1-Gamma[1,1]
+        Gamma[2,1] <- 1-Gamma[2,2]
+        delta <- solve(t(diag(2)-Gamma+1),c(1,1)) 
+        T <- length(x)
+        u <- delta%*%diag(dgamma(x[1],shape=mu^2/sig^2,scale=sig^2/mu))
+        l <- log(sum(u))
+        phi <- u/sum(u)
+        for (t in 2:length(x)){
+                u <- phi%*%Gamma%*%diag(dgamma(x[t],shape=mu^2/sig^2,scale=sig^2/mu))
+                l <- l+log(sum(u))
+                phi <- u/sum(u)
+        }
+        return(-l)
 }
 
-mod1 <- nlminb(c(200,100,4,6,0.5,0.5),mllk,x=seal1$steplen[1:100],control=list(trace=1),lower=c(0,0,0,0,0,0),upper=c(Inf,Inf,Inf,Inf,1,1))
-mod1
 
-calcres <- function(reps=20){
-  df <- data.frame()
-  for (i in 1:reps){
-    a0 <- runif(2,100,400)
-    b0 <- runif(2,3,8)
-    gamma <- runif(2,0,1)
-    mod2 <- nlminb(c(a0,b0,gamma),mllk,x=seal1$steplen[1:1000],control=list(trace=1),lower=c(0,0,0,0,0,0),upper=c(Inf,Inf,Inf,Inf,0.9999,0.9999))
-    print(mod2$par)
-    print(c(mod2$par[1]*mod2$par[3],mod2$par[2]*mod2$par[4],mod2$par[1]*mod2$par[3]^2,mod2$par[2]*mod2$par[4]^2))
-    df[i,1] <- -mod2$objective 
-    df[i,2] <- mod2$par[1]*mod2$par[3]
-    df[i,3] <- mod2$par[2]*mod2$par[4]
-    df[i,4] <- sqrt(mod2$par[1]*mod2$par[3]^2)
-    df[i,5] <- sqrt(mod2$par[2]*mod2$par[4]^2)
-  }
-  return(df)
+llks<-rep(NA,20)
+df <- data.frame()
+for (runs in 1:20){
+        mu<-runif(2,1.5,5)
+        sig<-runif(2,1.5,5)
+        gamma0<-runif(2,1,4)  
+        mod<- nlm(mllk2,c(mu,sig,gamma0),x=seal1$steplen[1:500],print.level=0)
+        llks[runs] <- mod$minimum
+        df[runs,1] <- exp(mod$estimate[1])
+        df[runs,2] <- exp(mod$estimate[2])
+        df[runs,3] <- exp(mod$estimate[3])
+        df[runs,4] <- exp(mod$estimate[4])
+        df[runs,5] <- plogis(mod$estimate[5])
+        df[runs,6] <- plogis(mod$estimate[6])
+        print(llks[runs])
 }
 
-results <- calcres(reps=20)
-results
+
+a0<-runif(2,1,4)
+b0<-runif(2,1,4)
+gamma0<-runif(2,0,1)
+nlm(mllk2,c(a0,b0,gamma0),x=seal1$steplen[1:100],print.level=2,iterlim=500,hessian=TRUE)
