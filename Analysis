@@ -79,7 +79,7 @@ viterbi<-function(obs,mod,nstates){
         delta_fin<- delta_w_0[order(id)]
         #calculate and return most likely states
         for (t in 2:T){
-                Gamma <- matrix(delta_fin,byrow=TRUE,nrow=nstates) #noch nicht für n>2 geschrieben(problem ist die matrix)!!!
+                Gamma <- matrix(delta_fin,byrow=TRUE,nrow=nstates)
                 Gamma <- exp(Gamma)                                   
                 Gamma <- Gamma/apply(Gamma,1,sum)
                 P<-diag(dgamma(obs[t],shape=mu^2/sigma^2,scale=sigma^2/mu))
@@ -89,7 +89,7 @@ viterbi<-function(obs,mod,nstates){
         iv<-numeric(T)
         iv[T] <-which.max(xi[T,])
         for (t in (T-1):1){ 
-                Gamma <- matrix(c(delta_fin),byrow=TRUE,nrow=2) #s.o.
+                Gamma <- matrix(c(delta_fin),byrow=TRUE,nrow=2)
                 Gamma <- exp(Gamma)
                 Gamma <- Gamma/apply(Gamma,1,sum)
                 iv[t] <- which.max(Gamma[,iv[t+1]]*xi[t,])
