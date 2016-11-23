@@ -1,4 +1,4 @@
-#2016_11_21_TW
+#2016_11_24_TW
 
 setwd("C:/Users/Admin/Documents/Robben")
 seal_clean <- read.csv("seal_data_cleaned.csv")
@@ -46,3 +46,54 @@ a0<-runif(2,1,4)
 b0<-runif(2,1,4)
 gamma0<-runif(2,0,1)
 nlm(mllk2,c(a0,b0,gamma0),x=seal1$steplen[1:100],print.level=2,iterlim=500,hessian=TRUE)
+
+
+#Viterbi algorithm + example
+mu <- c(4.766709,3.647406)
+sig <- c(3.451941,3.155634)
+gamma0 <- c(0.8911477,0.9319619)
+mod<- nlm(mllk2,c(mu,sig,gamma0),x=seal1$steplen[1:500],print.level=0)
+
+viterbi<-function(obs,mod,nstates){
+        #get parameters
+        mu <- mod$estimate[1:nstates]
+        sigma <- mod$estimate[nstates+1:nstates*2]
+        delta <- c(mod$estimate[nstates*2+1:nstates*(nstates-1)])
+        #actual algorithm
+        T <- length(obs)
+        xi <- matrix(0,as.integer(T),nstates)
+        u <- delta%*%diag(nstates)
+        xi[1,] <- u/sum(u)
+        
+        #fill delta with zeros to be able to compute Gamma for n>2
+        helpvec <- delta
+        helpvec2 <- c()
+        numb <- 1
+        for (i in 1:nstates){
+                helpvec2 <- c(helpvec2,numb)
+                numb <- numb+nstates
+        }
+        delta_w_0 <- c(helpvec,rep(0,length(helpvec2)))
+        id <- c( seq_along(helpvec), helpvec2-0.5 )
+        delta_fin<- delta_w_0[order(id)]
+        #calculate and return most likely states
+        for (t in 2:T){
+                Gamma <- matrix(delta_fin,byrow=TRUE,nrow=nstates) #noch nicht für n>2 geschrieben(problem ist die matrix)!!!
+                Gamma <- exp(Gamma)                                   
+                Gamma <- Gamma/apply(Gamma,1,sum)
+                P<-diag(dgamma(obs[t],shape=mu^2/sigma^2,scale=sigma^2/mu))
+                u<-apply(xi[t-1,]*Gamma,2,max)%*%P
+                xi[t,] <- u/sum(u)
+        }
+        iv<-numeric(T)
+        iv[T] <-which.max(xi[T,])
+        for (t in (T-1):1){ 
+                Gamma <- matrix(c(delta_fin),byrow=TRUE,nrow=2) #s.o.
+                Gamma <- exp(Gamma)
+                Gamma <- Gamma/apply(Gamma,1,sum)
+                iv[t] <- which.max(Gamma[,iv[t+1]]*xi[t,])
+        }
+        return(iv)
+}
+
+viterbi(obs = seal1$steplen[1:500],mod=mod,nstates=2)
