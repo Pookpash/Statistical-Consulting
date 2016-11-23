@@ -56,9 +56,10 @@ mod<- nlm(mllk2,c(mu,sig,gamma0),x=seal1$steplen[1:500],print.level=0)
 
 viterbi<-function(obs,mod,nstates){
         #get parameters
-        mu <- mod$estimate[1:nstates]
-        sigma <- mod$estimate[nstates+1:nstates*2]
-        delta <- c(mod$estimate[nstates*2+1:nstates*(nstates-1)])
+        #function to convert to working parameters needs to be implemented!
+        mu <- exp(mod$estimate[1:nstates])
+        sigma <- exp(mod$estimate[nstates+1:nstates*2])
+        delta <- plogis(c(mod$estimate[nstates*2+1:nstates*(nstates-1)]))
         #actual algorithm
         T <- length(obs)
         xi <- matrix(0,as.integer(T),nstates)
@@ -96,4 +97,9 @@ viterbi<-function(obs,mod,nstates){
         return(iv)
 }
 
-viterbi(obs = seal1$steplen[1:500],mod=mod,nstates=2)
+states <- viterbi(obs = seal1$steplen[1:500],mod=mod,nstates=2)
+states_mean <- states
+states_mean[states_mean==1] <- exp(mod$estimate[1])
+states_mean[states_mean==2] <- exp(mod$estimate[2])
+plot(seal1$steplen[2:500],type="l",col="blue")
+points(states_mean[2:500],pch=20)
