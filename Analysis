@@ -1,87 +1,92 @@
-#2016_11_24_TW
+#2016_11_30_TW
 
 setwd("C:/Users/Admin/Documents/Robben")
 seal_clean <- read.csv("seal_data_cleaned.csv")
 seal1 <- seal_clean[which(seal_clean$sealID=="1"),]
 
-mllk2 <- function(thetaworking,x){
-        mu <- exp(thetaworking[1:2])
-        sig <- exp(thetaworking[3:4])
-        Gamma <- diag(plogis(thetaworking[5:6]))
-        Gamma[1,2] <- 1-Gamma[1,1]
-        Gamma[2,1] <- 1-Gamma[2,2]
-        delta <- solve(t(diag(2)-Gamma+1),c(1,1)) 
-        T <- length(x)
-        u <- delta%*%diag(dgamma(x[1],shape=mu^2/sig^2,scale=sig^2/mu))
-        l <- log(sum(u))
-        phi <- u/sum(u)
-        for (t in 2:length(x)){
-                u <- phi%*%Gamma%*%diag(dgamma(x[t],shape=mu^2/sig^2,scale=sig^2/mu))
-                l <- l+log(sum(u))
-                phi <- u/sum(u)
+
+# functions
+mllk <- function(parvect,obs,N){
+        lpn <- pw2pn(parvect,N)
+        n <- length(obs)
+        allprobs <- matrix(rep(1,N*n),nrow=n)
+        ind.step <- which(!is.na(obs))
+        for (j in 1:N){
+                step.prob <- rep(1,n)
+                step.prob[ind.step] <- dgamma(obs[ind.step],shape=lpn$mu[j]^2/lpn$sigma[j]^2,scale=lpn$sigma[j]^2/lpn$mu[j])
+                allprobs[,j] <- step.prob
         }
-        return(-l)
+        foo <- lpn$delta  
+        lscale <- 0
+        for (i in 1:n){
+                foo <- foo%*%lpn$gamma*allprobs[i,]  
+                sumfoo <- sum(foo); lscale <- lscale+log(sumfoo); foo <- foo/sumfoo # scaling
+        }
+        return(-lscale)
 }
 
-
-llks<-rep(NA,20)
-df <- data.frame()
-for (runs in 1:20){
-        mu<-runif(2,1.5,5)
-        sig<-runif(2,1.5,5)
-        gamma0<-runif(2,1,4)  
-        mod<- nlm(mllk2,c(mu,sig,gamma0),x=seal1$steplen[1:500],print.level=0)
-        llks[runs] <- mod$minimum
-        df[runs,1] <- exp(mod$estimate[1])
-        df[runs,2] <- exp(mod$estimate[2])
-        df[runs,3] <- exp(mod$estimate[3])
-        df[runs,4] <- exp(mod$estimate[4])
-        df[runs,5] <- plogis(mod$estimate[5])
-        df[runs,6] <- plogis(mod$estimate[6])
-        print(llks[runs])
+mle <- function(obs,mu0,sigma0,gamma0,N){
+        parvect <- pn2pw(mu0,sigma0,gamma0,N)
+        mod <- nlm(mllk,parvect,obs,N,print.level=2,iterlim=1000,stepmax=5)
+        pn <- pw2pn(mod$estimate,N)
+        return(list(mu=pn$mu,sigma=pn$sigma,gamma=pn$gamma,delta=pn$delta,mllk=mod$minimum))
 }
 
+## function that converts 'natural' parameters (possibly constrained) to 'working' parameters (all of which are real-valued) - this is only necessary since I use the unconstrained optimizer nlm() below 
+pn2pw <- function(mu,sigma,gamma,N){
+        tmu <- log(mu)
+        tsigma <- log(sigma)
+        tgamma <- NULL
+        if(N>1){
+                foo <- log(gamma/diag(gamma))           ### gamma ist eine Matrix!
+                tgamma <- as.vector(foo[!diag(N)])
+        }
+        parvect <- c(tmu,tsigma,tgamma)
+        return(parvect)
+}
+## function that performs the inverse transformation
+pw2pn <- function(parvect,N){
+        mu <- exp(parvect[1:N])
+        sigma <- exp(parvect[(N+1):(2*N)])
+        gamma <- diag(N)
+        if(N>1){
+                gamma[!gamma] <- exp(parvect[(2*N+1):(N+N^2)])
+                gamma <- gamma/apply(gamma,1,sum)                 ### gamma = Matrix
+        }
+        delta <- solve(t(diag(N)-gamma+1),rep(1,N))
+        return(list(mu=mu,sigma=sigma,gamma=gamma,delta=delta))
+}
 
-a0<-runif(2,1,4)
-b0<-runif(2,1,4)
-gamma0<-runif(2,0,1)
-nlm(mllk2,c(a0,b0,gamma0),x=seal1$steplen[1:100],print.level=2,iterlim=500,hessian=TRUE)
+aic.mod <- function(mod){
+        llk <- mod$mllk
+        params <- length(mod$mu)+length(mod$sigma)+length(mod$mu)*(length(mod$mu)-1)
+        aic <- 2*llk+2*params
+        return(aic)
+}
 
+bic.mod <- function(mod,len){ #len should be the length of the data
+        llk <- mod$mllk
+        params <- length(mod$mu)+length(mod$sigma)+length(mod$mu)*(length(mod$mu)-1)
+        bic <- 2*llk+log(len)*params
+        return(bic)
+}
 
-#Viterbi algorithm + example
-mu <- c(4.766709,3.647406)
-sig <- c(3.451941,3.155634)
-gamma0 <- c(0.8911477,0.9319619)
-mod<- nlm(mllk2,c(mu,sig,gamma0),x=seal1$steplen[1:500],print.level=0)
-
-viterbi<-function(obs,mod,nstates){
+#viterbi
+viterbi<-function(obs,mod,N){
         #get parameters
         #function to convert to working parameters needs to be implemented!
-        mu <- exp(mod$estimate[1:nstates])
-        sigma <- exp(mod$estimate[nstates+1:nstates*2])
-        delta <- plogis(c(mod$estimate[nstates*2+1:nstates*(nstates-1)]))
+        mu <- mod$mu
+        sigma <- mod$sigma
+        gamma <- mod$gamma
+        delta <- mod$delta
         #actual algorithm
         T <- length(obs)
-        xi <- matrix(0,as.integer(T),nstates)
-        u <- delta%*%diag(nstates)
+        xi <- matrix(0,as.integer(T),N)
+        u <- delta%*%diag(N)
         xi[1,] <- u/sum(u)
-        
-        #fill delta with zeros to be able to compute Gamma for n>2
-        helpvec <- delta
-        helpvec2 <- c()
-        numb <- 1
-        for (i in 1:nstates){
-                helpvec2 <- c(helpvec2,numb)
-                numb <- numb+nstates
-        }
-        delta_w_0 <- c(helpvec,rep(0,length(helpvec2)))
-        id <- c( seq_along(helpvec), helpvec2-0.5 )
-        delta_fin<- delta_w_0[order(id)]
         #calculate and return most likely states
         for (t in 2:T){
-                Gamma <- matrix(delta_fin,byrow=TRUE,nrow=nstates)
-                Gamma <- exp(Gamma)                                   
-                Gamma <- Gamma/apply(Gamma,1,sum)
+                Gamma <- gamma
                 P<-diag(dgamma(obs[t],shape=mu^2/sigma^2,scale=sigma^2/mu))
                 u<-apply(xi[t-1,]*Gamma,2,max)%*%P
                 xi[t,] <- u/sum(u)
@@ -89,17 +94,46 @@ viterbi<-function(obs,mod,nstates){
         iv<-numeric(T)
         iv[T] <-which.max(xi[T,])
         for (t in (T-1):1){ 
-                Gamma <- matrix(c(delta_fin),byrow=TRUE,nrow=2)
-                Gamma <- exp(Gamma)
-                Gamma <- Gamma/apply(Gamma,1,sum)
+                Gamma <- gamma
                 iv[t] <- which.max(Gamma[,iv[t+1]]*xi[t,])
         }
         return(iv)
 }
 
-states <- viterbi(obs = seal1$steplen[1:500],mod=mod,nstates=2)
-states_mean <- states
-states_mean[states_mean==1] <- exp(mod$estimate[1])
-states_mean[states_mean==2] <- exp(mod$estimate[2])
-plot(seal1$steplen[2:500],type="l",col="blue")
-points(states_mean[2:500],pch=20)
+plot_viterbi <- function(stateobj,obs,mod,N){
+        mu <- mod$mu
+        for(i in 1:N){
+                stateobj[stateobj==i]<-mu[i]
+        }
+        plot(obs,type="l",col="blue")
+        points(stateobj,pch=20)
+}
+
+# Beispiel
+mod <- mle(obs=seal1$steplen[1:500], c(30, 50, 70), c(10, 20, 5), matrix(rep(c(0.6, 0.2, 0.2), 3), nrow=3, byrow = T), 3)
+
+llks<-rep(NA,20)
+mu_out <- matrix(nrow = 20, ncol = N)
+sig_out <- matrix(nrow = 20, ncol = N)
+gamma_out <- list()
+for (runs in 1:20){
+        mu<-runif(N,10,150)
+        sig<-runif(N,1,400)
+        gamma<-matrix(runif(N^2,0,1), nrow = N)
+        gamma <- gamma/apply(gamma,1,sum)  
+        mod <- mle(obs=seal1$steplen[1:500], mu, sig, gamma, N)
+        llks[runs] <- mod$mllk
+        for (i in 1:N) {
+                mu_out[runs, i] <- mod$mu[i]
+                sig_out[runs, i] <- mod$sigma[i]
+        }
+        gamma_out[runs] <-  mod$gamma
+}
+
+# one full example
+mod <- mle(obs=seal1$steplen[1:500], c(30, 50, 70), c(10, 20, 5), matrix(rep(c(0.6, 0.2, 0.2), 3), nrow=3, byrow = T), 3)
+aic.mod(mod)
+bic.mod(mod,500)
+states<-viterbi(seal1$steplen[1:500],mod,3)
+plot_viterbi(states,seal1$steplen[1:500],mod,N)
+
