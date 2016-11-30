@@ -6,7 +6,7 @@ using namespace Rcpp;
 double forwardalgo(arma::rowvec x, arma::mat phi, arma::mat Gamma, arma:mat u, double l, arma::rowvec mu, arma::rowvec sig,int nrows) {
         for(int t=2;t<nrows;t++)) {
                 u = phi*Gamma;
-                probvec = dgamma(x[t],shape=mu^2/sig^2,scale=sig^2/mu); //this is the last part that has to be rewritten I think (hope)
+                probvec = R::dgamma(x[t],shape=mu^2/sig^2,scale=sig^2/mu,0);
                 u = u * probvec.asDiagonal();
                 l = l+log(sum(u));
                 phi = u/sum(u);
