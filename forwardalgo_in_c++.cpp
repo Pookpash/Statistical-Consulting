@@ -6,7 +6,8 @@ using namespace std;
 
 
 // [[Rcpp::export]]
-double forwardalgo(arma::rowvec x, arma::mat phi, arma::mat Gamma, arma::mat u, double l, arma::rowvec shape, arma::rowvec scale,int nrows) {
+double forwardalgo(arma::rowvec x, arma::mat phi, arma::mat Gamma, arma::mat u, double l,
+                   arma::rowvec shape, arma::rowvec scale,int nrows) {
         for(int t=2;t<nrows;t++) {
                 u = phi*Gamma;
                 arma::mat probvec = R::diag(dgamma(x[t],shape=shape,scale=scale,0));
