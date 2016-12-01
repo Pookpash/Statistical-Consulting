@@ -1,10 +1,9 @@
 # Statistical-Consulting
 4 Code &amp; text
 
-# aktuellste Versionen (Stand: 1.12. 00:59):
+# aktuellste Versionen (Stand: 1.12. 09:31):
 
-Cleaning: 14.11 <br />
-Explo: 30.10 <br />
-ToDo: 21.11 <br />
-Analysis: 30.11 <br/>
+Cleaning: 01.12 <br />
+Explo: 01.12 <br />
+Analysis: 01.12 <br/>
 forwardalgo_in_c++: 01.12
