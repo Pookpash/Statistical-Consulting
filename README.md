@@ -1,7 +1,7 @@
 # Statistical-Consulting
 4 Code &amp; text
 
-# aktuellste Versionen (Stand: 30.11. 23:47):
+# aktuellste Versionen (Stand: 1.12. 00:59):
 
 Cleaning: 14.11 <br />
 Explo: 30.10 <br />
