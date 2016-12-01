@@ -135,4 +135,4 @@ mod <- mle(obs=seal1$steplen[1:500], c(30, 50, 70), c(10, 20, 5), matrix(rep(c(0
 aic.mod(mod)
 bic.mod(mod,500)
 states<-viterbi(seal1$steplen[1:500],mod,3)
-plot_viterbi(states,seal1$steplen[1:500],mod,N)
+plot_viterbi(states,seal1$steplen[1:500],mod,3)
