@@ -15,11 +15,15 @@ double forwardalgo(arma::rowvec foo, arma::mat gamma, arma::mat allprobs, double
         }
         return lscale;
 }
-// time comparison for n =   500 and 3 states: Rcode:   3.33s on desktop, C++code:  0.78s -> 4.3 times faster
-// time comparison for n =  2000 and 3 states: Rcode:  17.85s on desktop, C++code:  3.66s -> 4.9 times faster
-// time comparison for n =  5000 and 3 states: Rcode:  22.67s on desktop, C++code:  5.76s -> 3.9 times faster
-// time comparison for n =  5000 and 4 states: Rcode: 106.47s on desktop, C++code: 28.10s -> 3.8 times faster
-// time comparison for n = 20000 and 3 states: Rcode:  98.04s on desktop, C++code: 24.07s -> 4.1 times faster
+// time comparisons (on Till's home desktop, so performance can vary depending on your setup)
+//
+// |   n   | states | time in R | time in C++ | times faster |
+// |-------|--------|-----------|-------------|--------------|
+// |   500 |      3 |     3.33s |       0.78s |          4.3 |
+// |  2000 |      3 |    17.85s |       3.66s |          4.9 |
+// |  5000 |      3 |    22.67s |       5.76s |          3.9 |
+// |  5000 |      4 |   106.47s |      28.10s |          3.8 |
+// | 20000 |      3 |    98.04s |      24.07s |          4.1 |
 
 /*** R
 foo <- c(0.8,0.2)
