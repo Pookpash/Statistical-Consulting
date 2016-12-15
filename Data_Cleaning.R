@@ -1,4 +1,4 @@
-#2016_11_14_TW
+#2016_12_15_TW
 
 ### load packages and set wd
 setwd("C:/Users/Admin/Documents/Robben") #change as needed
@@ -80,7 +80,7 @@ earth.dist <- function (long1, lat1, long2, lat2)
         return(d)
 }
 steplen <-earth.dist(long1=data[,7],lat1=data[,6],long2=data[,9],lat2=data[,8])
-steplen <- round(steplen *1000,2) # convert to meters
+steplen <- steplen *1000 # convert to meters
 data[,16] <- steplen
 colnames(data)[colnames(data) == "V16"] <- "steplen"
 
