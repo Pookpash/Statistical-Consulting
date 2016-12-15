@@ -1,4 +1,4 @@
-setwd("C:/Users/User/Documents/Studium_MA/3. Semester/Statistical Consulting/R")
+setwd("C:/Users/Pook/Documents/Robben")
 seal_clean <- read.csv("seal_data_cleaned.csv")
 seal1 <- seal_clean[which(seal_clean$sealID=="1"),]
 
@@ -72,5 +72,25 @@ mle <- function(obs,mu01,mu02,mu03,mu04,sigma01,sigma02,sigma03,sigma04,gamma0,N
   return(list(mu1=pn$mu1,mu2=pn$mu2,mu3=pn$mu3,mu4=pn$mu4,sigma1=pn$sigma1,sigma2=pn$sigma2,sigma3=pn$sigma3,sigma4=pn$sigma4,gamma=pn$gamma,delta=pn$delta,mllk=mod$minimum))
 }
 
+#aic and bic only work for pdfs with two parameters! good enough for us atm.
+aic.mod <- function(mod,n_variables){
+        llk <- mod$mllk
+        no_states <- length(mod$gamma[1,])
+        params <- 2*n_variables*no_states+no_states*(no_states-1)
+        aic <- 2*llk+2*params
+        return(aic)
+}
+
+#aic and bic only work for pdfs with two parameters! good enough for us atm.
+bic.mod <- function(mod,n_variables,len){ #len should be the length of the data
+        llk <- mod$mllk
+        no_states <- length(mod$gamma[1,])
+        params <- 2*n_variables*no_states+no_states*(no_states-1)
+        bic <- 2*llk+log(len)*params
+        return(bic)
+}
+
 # Beispiel
 mod <- mle(obs, c(80, 160), c(210, 190), c(13, 17),c(30,40), c(10, 20),c(15,30),c(5,3),c(10,20), matrix(rep(c(0.5, 0.5), 2), nrow=2, byrow = T), 2)
+aic.mod(mod,n_variables=4)
+bic.mod(mod,n_variables=4,len=100)
