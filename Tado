@@ -1,0 +1,15 @@
+
+1. Nullenproblem untersuchen (wie viele Nullen im Originaldatensatz, ggfs Rundung überprüfen)
+
+2. Kombination mehrere Robben+ mehrere Variablen
+
+3. Modelle fitten (erstmal ohne covariates) 
+ - jedes modell 20 mal
+ - 2:8? states 
+ - 1:4 variables
+
+4. Covariates
+
+5. sich über Rechenleistung ärgern
+
+6. Viterbi muss aktualisiert (v.a. für mehrere Variablen, evtl. warten bis covariates drin sind)
