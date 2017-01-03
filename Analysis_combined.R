@@ -4,6 +4,9 @@ seal_clean <- read.csv("seal_data_cleaned.csv")
 obs <- cbind(seal_clean$sealID, seal_clean$surf.dur, seal_clean$dive.dur,
              seal_clean$max.dep, seal_clean$steplen)
 colnames(obs) <- c("sealID","surf.dur", "dive.dur", "max.dep", "steplen")
+#split dataset for harbour and grey seals (1=grey seal)
+obs_1 <- obs[which(obs[,1]<=11),]
+obs_0 <- obs[which(obs[,1]>=12),]
 
 ## function that converts 'natural' parameters (possibly constrained) to 'working' parameters (all of which are real-valued) - this is only necessary since I use the unconstrained optimizer nlm() below 
 pn2pw <- function(mu1,mu2,mu3,mu4,sigma1,sigma2,sigma3,sigma4,gamma,N){
@@ -97,22 +100,14 @@ bic.mod <- function(mod,n_variables,len){ #len should be the length of the data
 }
 
 create_obslist <- function(obs){
+  lmin <- min(obs[,1])
+  lmax <- max(obs[,1])
   obslist <- list()
-  for (i in 1:21) {
+  for (i in lmin:lmax) {
     obslist[[i]]<-obs[which(obs[,1]==i),]
   }
   return(obslist)
 }
-
-#example
-
-# Beispiel
-mod <- mle(obs, c(93.93751, 43.75735), c(95.60691, 170.46261), c(7.363427, 22.342912),c(72.04225, 107.97769), c(113.34030,  10.81537),c(76.22124, 41.65749),c(4.926802, 2.656713),c(78.01318, 68.72758), matrix(rep(c(0.5, 0.5), 2), nrow=2, byrow = T), 2)
-mod3 <- mle(obs,c(runif(2,40,200)),c(runif(2,40,500)),c(runif(2,5,30)),c(runif(2,10,200)),
-            c(runif(2,2,40)),c(runif(2,5,50)),c(runif(2,1,10)),c(runif(2,3,200)),
-            matrix(rep(c(0.5, 0.5), 2), nrow=2, byrow = T), 2)
-aic.mod(mod,n_variables=4)
-bic.mod(mod,n_variables=4,len=100)
 
 #Code to run a specific N-state model multiple times with different starting values (with all 4 variables, adjust accordingly)
 fitmult <- function(obs,n_fits,N){
@@ -120,10 +115,39 @@ fitmult <- function(obs,n_fits,N){
   for (i in 1:n_fits){
     mat <- matrix(runif(N^2,0,1), nrow = N)
     mat <- mat/apply(mat,1,sum) 
-    modl[[i]] <- mle(obs,c(runif(N,20,200)),c(runif(N,40,300)),c(runif(N,4,40)),c(runif(N,10,200)),
-                     c(runif(N,2,200)),c(runif(N,20,70)),c(runif(N,1,20)),c(runif(N,10,150)),
+    modl[[i]] <- mle(obs,c(runif(N,20,200)),c(runif(N,40,300)),c(runif(N,1,50)),c(runif(N,10,200)),
+                     c(runif(N,2,200)),c(runif(N,20,70)),c(runif(N,1,30)),c(runif(N,10,150)),
                      mat, N)
   }
   return(modl)
 }
-results <- fitmult(obs,2,2)
+results <- fitmult(obs_1,2,3)
+
+#WIP
+plotresults <- function(res,N,densvec=c(rep(0.1,4))){
+  par(mfrow=c(2,2))
+  x1 <- seq(1,150,length=1000)
+  x2 <- seq(1,250,length=1000)
+  x3 <- seq(0.1,40,length=1000)
+  x4 <- seq(1,180,length=1000)
+  plot(x1,dgamma(x1,res$mu1[1]^2/res$sigma1[1]^2,scale=res$sigma1[1]^2/res$mu1[1]), type="l", col=1, ylim=c(0,densvec[1]), main="Surface Duration", ylab="density", xlab= "seconds", lwd=2)
+  for(i in 2:N){
+    points(x1,dgamma(x1,res$mu1[i]^2/res$sigma1[i]^2,scale=res$sigma1[i]^2/res$mu1[i]), type="l", col=i, lwd=2)
+  }
+  
+  plot(x2,dgamma(x2,res$mu2[1]^2/res$sigma2[1]^2,scale=res$sigma2[1]^2/res$mu2[1]), type="l", col=1, ylim=c(0,densvec[2]), main="Dive Duration", ylab="density", xlab= "seconds", lwd=2)
+  for(i in 2:N){
+    points(x2,dgamma(x2,res$mu2[i]^2/res$sigma2[i]^2,scale=res$sigma2[i]^2/res$mu2[i]), type="l", col=i, lwd=2)
+  }
+  
+  plot(x3,dgamma(x3,res$mu3[1]^2/res$sigma3[1]^2,scale=res$sigma3[1]^2/res$mu3[1]), type="l", col=1, ylim=c(0,densvec[3]), main="Maximum Depth", ylab="density", xlab= "meter", lwd=2)
+  for(i in 2:N){
+    points(x3,dgamma(x3,res$mu3[i]^2/res$sigma3[i]^2,scale=res$sigma3[i]^2/res$mu3[i]), type="l", col=i, lwd=2)
+  }
+  
+  plot(x4,dgamma(x4,res$mu4[1]^2/res$sigma4[1]^2,scale=res$sigma4[1]^2/res$mu4[1]), type="l", col=1, ylim=c(0,densvec[4]), main="Steplength", ylab="density", xlab= "meter", lwd=2)
+  for(i in 2:N){
+    points(x4,dgamma(x4,res$mu4[i]^2/res$sigma4[i]^2,scale=res$sigma4[i]^2/res$mu4[i]), type="l", col=i, lwd=2)
+  }
+  par(mfrow=c(1,1))
+}
