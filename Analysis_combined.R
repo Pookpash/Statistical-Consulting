@@ -106,6 +106,10 @@ create_obslist <- function(obs){
   for (i in lmin:lmax) {
     obslist[[i]]<-obs[which(obs[,1]==i),]
   }
+  fixval <- length(obslist)#fix for the problem with the harbour seals
+  if(fixval>=15){ 
+    obslist <- obslist[-c(1:11)]
+  }
   return(obslist)
 }
 
@@ -121,7 +125,7 @@ fitmult <- function(obs,n_fits,N){
   }
   return(modl)
 }
-results <- fitmult(obs_1,2,3)
+results <- fitmult(obs_0,1,2)
 
 #WIP
 plotresults <- function(res,N,densvec=c(rep(0.1,4))){
