@@ -144,16 +144,6 @@ bic.mod <- function(mod,n_variables,len){ #len should be the length of the data
 }
 
 create_obslist <- function(obs){
-  lmin <- min(obs[,6])
-  lmax <- max(obs[,6])
-  obslist <- list()
-  for (i in lmin:lmax) {
-    obslist[[i]]<-obs[which(obs[,6]==i),]
-  }
-  return(obslist)
-}
-
-create_obslist <- function(obs){
   obslist <- list()
   for (i in unique(obs[,6])) {
     obslist[[i]]<-obs[which(obs[,6]==i),]
