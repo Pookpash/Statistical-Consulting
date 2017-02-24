@@ -1,0 +1,30 @@
+# Histogramm Surface Duration
+obs_h <- c(rep(1,10),rep(3,3),rep(5,5),rep(8,7),9.9,4.3,5.2)
+
+obs_h <- obs_1
+hist(obs_h,breaks=120,prob=T,xlab=NULL,main="Surface Duration",col="grey")
+z<-0:600
+pi <- res3$delta
+lines(z,pi[1]*dgamma(z,shape=res3$mu1[1]^2/res3$sigma1[1]^2,scale=res3$sigma1[1]^2/res3$mu1[1])+
+        pi[2]*dgamma(z,shape=res3$mu1[2]^2/res3$sigma1[2]^2,scale=res3$sigma1[2]^2/res3$mu1[2])+
+        pi[3]*dgamma(z,shape=res3$mu1[3]^2/res3$sigma1[3]^2,scale=res3$sigma1[3]^2/res3$mu1[3]),col=2,lwd=2)
+
+
+# als Funktion
+hist_obs_model <- function(obs_h,results,breaks){
+  title <- c("Surface Duration","Dive Duration","Maximum Depth","Steplength")
+  pi <- results$delta
+  mu <- c(results$mu1,results$mu2,results$mu3,results$mu4)
+  sigma <- c(results$sigma1,results$sigma2,results$sigma3,results$sigma4)
+  z <- list(1:600,1:600,1:140,1:500)
+  N <- 3
+  par(mfrow=c(2,2))
+  for(i in 1:4){
+    hist(obs_h[,(i+1)],breaks=breaks[i],prob=T,xlab=NULL,main=title[i],col="grey")
+    lines(z[[i]],pi[1]*dgamma(z[[i]],shape=mu[(i*N-N+1)]^2/sigma[(i*N-N+1)]^2,scale=sigma[(i*N-N+1)]^2/mu[(i*N-N+1)])+
+            pi[2]*dgamma(z[[i]],shape=mu[i*N-1]^2/sigma[i*N-1]^2,scale=sigma[i*N-1]^2/mu[i*N-1])+
+            pi[3]*dgamma(z[[i]],shape=mu[i*N]^2/sigma[i*N]^2,scale=sigma[i*N]^2/mu[i*N]),
+          col=2,lwd=2)
+  }
+}
+hist_obs_model(obs_1,res3,c(120,120,56,100))
