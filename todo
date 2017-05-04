@@ -1,0 +1,31 @@
+Steplength überprüfen mit moveHMM prepdata
+
+(Patrick) Turning angle Geradengleichung + Formel für turning angle
+
+(optional) allprobs code in c++
+
+variable names
+steplength <- step
+dive duration <- dive.dur
+surface duration <- surf.dur
+turning angle <- angle
+%bathymetry <- depth
+
+
+Sonstiges:
+distr. für turning angles von Mises
+distr. für %dive dep beta
+
+
+Aufgabenaufteilung
+
+Patrick Turning angle Geradengleichung + Formel für turning angle
+
+Sina working parameters + obslist + mle 
+
+Till allprobs in c++
+
+Svenja Steplength überprüfen
+
+Dorian einarbeiten in Theory + R, vor allem R!
+
