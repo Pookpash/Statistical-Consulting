@@ -61,7 +61,6 @@ arma::colvec dbeta_rcpp(NumericVector x, double mu, double sigma){
         //convert mean and sd to shape1 and shape2
         double shape1 = (((1-mu)/pow(sigma,2))-(1/mu))*pow(mu,2);
         double shape2 = shape1*(1/mu-1);
-        cout<<shape2;
         
         for(int i=0; i<x.size(); i++) {
                 if(!arma::is_finite(x(i)))
@@ -105,13 +104,19 @@ arma::mat allprobs_rcpp(int nStates, int nObs, arma::mat data, arma::mat mumat, 
                 surfProb = dgamma_rcpp(surf, mumat(i,2), sigmat(i,2));
                 durProb = dgamma_rcpp(dur, mumat(i,3), sigmat(i,3));
                 diveProb = dbeta_rcpp(dive, mumat(i,4), sigmat(i,4));
-                cout<<diveProb;
+                
+                //cout << stepProb;
+                //cout << angleProb;
+                //cout << surfProb;
+                //cout << durProb;
+                //cout << diveProb;
                 
                 for(int j=0; j<nObs; j++)
                 {
                         float temp;
                         temp = stepProb[j]*angleProb[j]*surfProb[j]*durProb[j]*diveProb[j];
-                        allProbs.col(i)[j] = temp;
+                        //allProbs.col(i)[j] = temp;
+                        allProbs(j,i) = temp;
                 }
                 
         }
@@ -164,12 +169,8 @@ for (j in 1:2){
         dive.prob  <- dgamma(data[,4],  shape=mumat[j,4]^2/sigmat[j,4]^2, scale=sigmat[j,4]^2/mumat[j,4])
         shape1 <- ((1-mumat[j,5])/(sigmat[j,5]^2)-(1/mumat[j,5]))*(mumat[j,5]^2)
         dep.prob   <- dbeta(data[,5],   shape1=shape1, shape2=shape1*(1/mumat[j,5]-1),0)
-        print(dep.prob)
-        allprobsR[,j] <- surf.prob*dive.prob*dep.prob*step.prob
+        allprobsR[,j] <- surf.prob*angle.prob*dive.prob*dep.prob*step.prob
 }
 allprobsR
 
-
 */
-
-
