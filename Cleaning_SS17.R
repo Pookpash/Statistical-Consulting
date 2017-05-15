@@ -1,5 +1,4 @@
 
-
 setwd("C:/Users/Admin/Documents/Robben")
 data <- read.delim("~/Robben/seal_data_20170420.txt")
 
