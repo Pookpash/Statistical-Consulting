@@ -1,7 +1,5 @@
-### load packages and set wd
-require(maptools)
 
-setwd("C:/Users/Pook/Documents/Robben")
+setwd("C:/Users/Admin/Documents/Robben")
 data <- read.delim("~/Robben/seal_data_20170420.txt")
 
 #remove unneeded columns
@@ -42,18 +40,18 @@ data[,11] <- as.integer(data[,11])
 #steplen function (in km)
 earth.dist <- function (long1, lat1, long2, lat2)
 {
-  rad <- pi/180
-  a1 <- lat1 * rad
-  a2 <- long1 * rad
-  b1 <- lat2 * rad
-  b2 <- long2 * rad
-  dlon <- b2 - a2
-  dlat <- b1 - a1
-  a <- (sin(dlat/2))^2 + cos(a1) * cos(b1) * (sin(dlon/2))^2
-  c <- 2 * atan2(sqrt(a), sqrt(1 - a))
-  R <- 6378.145
-  d <- R * c
-  return(d)
+        rad <- pi/180
+        a1 <- lat1 * rad
+        a2 <- long1 * rad
+        b1 <- lat2 * rad
+        b2 <- long2 * rad
+        dlon <- b2 - a2
+        dlat <- b1 - a1
+        a <- (sin(dlat/2))^2 + cos(a1) * cos(b1) * (sin(dlon/2))^2
+        c <- 2 * atan2(sqrt(a), sqrt(1 - a))
+        R <- 6378.145
+        d <- R * c
+        return(d)
 }
 steplen <-earth.dist(long1=data[,4],lat1=data[,5],long2=data[,6],lat2=data[,7])
 steplen <- steplen *1000 # convert to meters
@@ -70,19 +68,83 @@ levels(data$ID_burst)<-c(1:1020)
 #this may lead to problems when analyzing them by species
 #in that case, just rerun the code above for the Harbour Seals dataset
 
-#wip :turning angles
-
 #turning angles
-trackAngle <- function(xy) {
-  angles <- abs(c(trackAzimuth(xy), 0) -
-                  c(0, rev(trackAzimuth(xy[nrow(xy):1, ]))))
-  angles[is.na(angles)] <- 180
-  angles[-c(1, length(angles))]
+
+yberechnen <- function(w,x,y,z){
+        if (x[1]-w[1]==0){ #prevent dividing by zero
+                helpcalc1 <- 0.00000000000001
+        } else {
+                helpcalc1 <- x[1]-w[1]
+        }
+        
+        m <- (x[2]-w[2])/helpcalc1
+        b <- x[2]-m*x[1]
+        
+        if (z[1]-y[1]==0){ #prevent dividing by zero
+                helpcalc2 <- 0.00000000000001
+        } else {
+                helpcalc2 <- z[1]-y[1]
+        }
+        mm <- (z[2]-y[2])/helpcalc2
+        bb <- z[2]-y*x[1]
+        if(mm==m){ #prevent problem induced above
+                m<-m+0.000000000000000000000000001
+        }
+        yy <- c((b-bb)/(mm-m))
+        yy[2] <- m*yy[1]+b
+        return(yy)
 }
 
-180 - trackAngle(as.matrix(data[1:1000,c(4,5)]))
+#w startpunkt vorheriger
+#x endpunkt vorher
+#y start aktuell
+#z end aktuell
 
-data$turn.angle <- angles
+y_intervec <- matrix(c(rep(0, 2*(length(data[,1])+1))),nrow=length(data[,1])+1)
+for (i in 2: length(data[,1])){
+        w <- c(data[i-1,4], data[i-1,5])
+        x <- c(data[i-1,6], data[i-1,7])
+        y <- c(data[i,4], data[i,5])
+        z <- c(data[i,6], data[i,7])
+        y_int <- yberechnen(w,x,y,z)
+        y_intervec[i,1] <- y_int[1]
+        y_intervec[i,2] <- y_int[2]
+}
+
+y_intervec <- as.matrix(y_intervec,ncol=2,byrow=T)
+
+turnAngle <- function(x,y,z){
+        v <- c(y[1]-x[1],y[2]-x[2])
+        w <- c(z[1]-y[1],z[2]-y[2])
+        angle <- atan2(w[2],w[1])-atan2(v[2],v[1])
+        while(angle <= (-pi)){
+                angle <- angle + 2*pi
+        }
+        while(angle > pi){
+                angle <- angle -2*pi
+        }
+        return(angle)
+}
+
+turnang <- c(0)
+for (i in 2:length(data[,1])){
+        x <- c(data[i-1,6], data[i-1,7])
+        y <- y_intervec[i,]
+        z <- c(data[i,4], data[i,5])
+        turnang[i] <- turnAngle(x,y,z)
+}
+
+#put in on the dataframe
+
+data$angle <- turnang
+
+#get rid of wrong angles
+ID_burst_vector <- match(unique(data$ID_burst), data$ID_burst)
+data <- data[-ID_burst_vector,]
+
+#x endpunkt vorheriger tauchgang, vec mit 2 elem
+#y vorher berechnet
+#z startpunkt aktueller tauchgang, vec 2 elem
 
 #write to new csv-file to prevent repeating the steps above everytime
 #one cleaned file with almost all columns
@@ -95,8 +157,12 @@ datax <- data[,c(1,2,8,10:13,15:20)]
 
 write.csv(datax, file ="seal_work.csv")
 
-datag <- datax[1:91830,] #needs to be adjusted after turning angles have been implemented
+grey_end <- match(unique(data$ID), data$ID)[12]
+datag <- datax[1:(grey_end-1),] #needs to be adjusted after turning angles have been implemented
 
 
 write.csv(datag, file ="greyseal_work.csv")
 
+
+datah <- datax[grey_end:length(datax[,1]),]
+write.csv(datag, file="harbseal_work.csv")
