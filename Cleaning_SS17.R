@@ -5,7 +5,6 @@ data <- read.delim("~/Robben/seal_data_20170420.txt")
 #remove unneeded columns
 data <- data[,c(1,2,4:18)]
 
-
 ### datacleaning
 #first column
 data[,1] <- gsub("S01","12",data[,1])
