@@ -1,4 +1,5 @@
 
+
 setwd("C:/Users/Admin/Documents/Robben")
 data <- read.delim("~/Robben/seal_data_20170420.txt")
 
@@ -101,6 +102,10 @@ yberechnen <- function(w,x,y,z){
 #z end aktuell
 
 y_intervec <- matrix(c(rep(0, 2*(length(data[,1])+1))),nrow=length(data[,1])+1)
+        #correct size of vector specified beforehand 
+        #to make code quicker since R does not 
+        #allocate memory very well. Speed difference (~30times faster!)
+
 for (i in 2: length(data[,1])){
         w <- c(data[i-1,4], data[i-1,5])
         x <- c(data[i-1,6], data[i-1,7])
@@ -126,7 +131,9 @@ turnAngle <- function(x,y,z){
         return(angle)
 }
 
-turnang <- c(0)
+turnang <- c(rep(0,length(data[,1])+1)) #correct size of vector specified beforehand 
+                                        #to make code quicker since R does not 
+                                        #allocate memory very well.
 for (i in 2:length(data[,1])){
         x <- c(data[i-1,6], data[i-1,7])
         y <- y_intervec[i,]
