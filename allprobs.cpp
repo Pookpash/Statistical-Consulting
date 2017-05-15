@@ -105,12 +105,6 @@ arma::mat allprobs_rcpp(int nStates, int nObs, arma::mat data, arma::mat mumat, 
                 durProb = dgamma_rcpp(dur, mumat(i,3), sigmat(i,3));
                 diveProb = dbeta_rcpp(dive, mumat(i,4), sigmat(i,4));
                 
-                //cout << stepProb;
-                //cout << angleProb;
-                //cout << surfProb;
-                //cout << durProb;
-                //cout << diveProb;
-                
                 for(int j=0; j<nObs; j++)
                 {
                         float temp;
