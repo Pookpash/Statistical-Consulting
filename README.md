@@ -1,6 +1,6 @@
 # Statistical-Consulting
 for Code
 
-# last update: 26.04. 20:18
--Code vom letzten semester ist in den Ordner für altes gewandert, mit Ausnahme des Forward Algos, da er noch aktuell ist und ggfs. geupdated wird. <br />
--Code für das Cleanen des neuen Datasets ist online, aber noch WIP, da turning angles noch nicht so funktioniert wie gewünscht.
+# last update: 15.05. 18:22
+-Sina hat ihren Code gemerged.
+-Cleaning für das Dataset ist fertig. Wobei man turning angle mmn. immer noch mit Vorsicht benuzten sollte.
