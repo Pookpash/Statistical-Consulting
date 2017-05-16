@@ -7,6 +7,10 @@ using namespace std;
 
 //'Parameters for the pdfs (non self explanatory)
 //'@params Numericvector x is the data vector
+//'@params mu is the expectation E(X) based on the distribution of X
+//'@params sigma is the Variance Var(X) based on the distribution of X
+//'@params kappa is the ... for the von Mises dist
+//'@params phi is the concentration parameter for the beta distribution. his definition is phi = alpha + beta, resp. shape1 + shape2
 
 //'Parameters for the allprobs algorithm
 //'@params nStates - number of States
@@ -54,13 +58,13 @@ arma::colvec dvm_rcpp(NumericVector x, double mu, double kappa){
 
 // [[Rcpp::export]]
 //density of beta dist
-arma::colvec dbeta_rcpp(NumericVector x, double mu, double sigma){
+arma::colvec dbeta_rcpp(NumericVector x, double mu, double phi){
         
         arma::colvec res(x.size());
         
         //convert mean and sd to shape1 and shape2
-        double shape1 = (((1-mu)/pow(sigma,2))-(1/mu))*pow(mu,2);
-        double shape2 = shape1*(1/mu-1);
+        double shape1 = mu*phi;
+        double shape2 = phi*(1-mu);
         
         for(int i=0; i<x.size(); i++) {
                 if(!arma::is_finite(x(i)))
@@ -109,7 +113,6 @@ arma::mat allprobs_rcpp(int nStates, int nObs, arma::mat data, arma::mat mumat, 
                 {
                         float temp;
                         temp = stepProb[j]*angleProb[j]*surfProb[j]*durProb[j]*diveProb[j];
-                        //allProbs.col(i)[j] = temp;
                         allProbs(j,i) = temp;
                 }
                 
@@ -161,8 +164,7 @@ for (j in 1:2){
         angle.prob <- dvm_rcpp(data[,2],mumat[j,2],sigmat[j,2])
         surf.prob  <- dgamma(data[,3],  shape=mumat[j,3]^2/sigmat[j,3]^2, scale=sigmat[j,3]^2/mumat[j,3])
         dive.prob  <- dgamma(data[,4],  shape=mumat[j,4]^2/sigmat[j,4]^2, scale=sigmat[j,4]^2/mumat[j,4])
-        shape1 <- ((1-mumat[j,5])/(sigmat[j,5]^2)-(1/mumat[j,5]))*(mumat[j,5]^2)
-        dep.prob   <- dbeta(data[,5],   shape1=shape1, shape2=shape1*(1/mumat[j,5]-1),0)
+        dep.prob   <- dbeta(data[,5],   shape1=mumat[j,5]*sigmat[j,5], shape2= sigmat[j,5]*(1-mumat[j,5]))
         allprobsR[,j] <- surf.prob*angle.prob*dive.prob*dep.prob*step.prob
 }
 allprobsR
