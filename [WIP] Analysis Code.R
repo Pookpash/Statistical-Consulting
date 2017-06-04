@@ -1,52 +1,60 @@
 library(CircStats) # for von Mises distribution
+# besser circular statt CircStats?
 library(boot) # for logit
 
+setwd("C:/Users/User/Documents/Studium_MA/4. Semester/Statistical Consulting/R")
+
+# theta(mean) & phi(concentration) of Beta distr.
+# ttheta <- logit(theta)
+# tphi <- log(phi)
+# theta <- inv.logit(parvect[(8*N+1):(9*N)])
+# phi <- exp(parvect[(9*N+1):(10*N)])
+
+
 ## function that converts 'natural' parameters (possibly constrained) to 'working' parameters (all of which are real-valued) - this is only necessary since I use the unconstrained optimizer nlm() below 
-# mu & kappa: von Mises distr.; theta(mean) & phi(concentration) of Beta distr.
-pn2pw <- function(mu1,mu2,mu3,sigma1,sigma2,sigma3,mu,kappa,theta,phi,gamma,N){   
-  for(i in 1:3){
-    mu <- cbind(mu1,mu2,mu3)
-    assign(paste0("tmu", i), log(mu[,i]))    
-  }
-  for(i in 1:3){
-    sigma <- cbind(sigma1,sigma2,sigma3)
-    assign(paste0("tsigma", i), log(sigma[,i]))    
-  }
-  tmu <- NULL   # Transformation fehlt noch!
-  tkappa <- NULL   # Transformation fehlt noch!
-  ttheta <- logit(theta)
-  tphi <- log(phi)
-  tgamma <- NULL
-  if(N>1){
-    foo <- log(gamma/diag(gamma))
-    tgamma <- as.vector(foo[!diag(N)])
-  }
-  parvect <- c(tmu1,tmu2,tmu3,tsigma1,tsigma2,tsigma3,tmu,tkappa,ttheta,tphi,tgamma)
-  return(parvect)
+# mu & kappa: von Mises distr.
+pn2pw <- function(mu1,mu2,mu3,mu4,sigma1,sigma2,sigma3,sigma4,mu,kappa,gamma,N){   
+    for(i in 1:4){
+      mu <- cbind(mu1, mu2, mu3, mu4)
+      assign(paste0("tmu", i), log(mu[,i]))    
+    }
+    for(i in 1:4){
+      sigma <- cbind(sigma1, sigma2, sigma3, sigma4)
+      assign(paste0("tsigma", i), log(sigma[,i]))    
+    } 
+    tmu <-  kappa*cos(mu) # https://github.com/TheoMichelot/moveHMM/blob/master/R/n2w.R
+    tkappa <- kappa*sin(mu)   
+    tgamma <- NULL
+    if(N>1){
+        foo <- log(gamma/diag(gamma))
+        tgamma <- as.vector(foo[!diag(N)])
+    }
+    parvect <- c(tmu1,tmu2,tmu3,tmu4,tsigma1,tsigma2,tsigma3,tsigma4,tmu,tkappa,tgamma)
+    return(parvect)
 }
 
 ## function that performs the inverse transformation
 pw2pn <- function(parvect,N){
-  mu <- exp(parvect[1:(3*N)])
-  for(i in 1:3) {
-    assign(paste0("mu", i), mu[(i*N-N+1):(i*N)])
-  }   
-  sigma <- exp(parvect[(3*N+1):(3*2*N)])
-  for(i in 1:4) {
-    assign(paste0("sigma", i), sigma[(i*N-N+1):(i*N)])
-  } 
-  mu <- parvect[(3*2*N+1):(7*N)]   # Transformation fehlt noch!
-  kappa <- parvect[(7*N+1):(8*N)]   # Transformation fehlt noch!
-  theta <- inv.logit(parvect[(8*N+1):(9*N)])
-  phi <- exp(parvect[(9*N+1):(10*N)])
-  gamma <- diag(N)
-  if(N>1){
-    gamma[!gamma] <- exp(parvect[(10*N+1):(length(parvect))])
-    gamma <- gamma/apply(gamma,1,sum)           
-  }
-  delta <- solve(t(diag(N)-gamma+1),rep(1,N))
-  return(list(mu1=mu1,mu2=mu2,mu3=mu3,sigma1=sigma1,sigma2=sigma2,sigma3=sigma3,
-              mu=mu,kappa=kappa,theta=theta,phi=phi,gamma=gamma,delta=delta))
+    mu <- exp(parvect[1:(4*N)])
+    for(i in 1:4) {
+        assign(paste0("mu", i), mu[(i*N-N+1):(i*N)])
+    }   
+    sigma <- exp(parvect[(4*N+1):(4*2*N)])
+    for(i in 1:4) {
+        assign(paste0("sigma", i), sigma[(i*N-N+1):(i*N)])
+    } 
+    x <- parvect[(4*2*N+1):(9*N)]   # https://github.com/TheoMichelot/moveHMM/blob/master/R/w2n.R
+    y <- parvect[(9*N+1):(10*N)]   
+    mu <- Arg(x+1i*y)
+    kappa <- sqrt(x^2+y^2)
+    gamma <- diag(N)
+    if(N>1){
+        gamma[!gamma] <- exp(parvect[(10*N+1):(length(parvect))])
+        gamma <- gamma/apply(gamma,1,sum)           
+    }
+    delta <- solve(t(diag(N)-gamma+1),rep(1,N))
+    return(list(mu1=mu1,mu2=mu2,mu3=mu3,mu4=mu4,sigma1=sigma1,sigma2=sigma2,sigma3=sigma3,sigma4=sigma4,
+                mu=mu,kappa=kappa,gamma=gamma,delta=delta))
 }
 
 mllk <- function(parvect,obsl,N){ #obsl has to be a list!
@@ -76,15 +84,13 @@ mllk <- function(parvect,obsl,N){ #obsl has to be a list!
   lk <- sum(vec)
   return(-lk)
 }
-
-mle <- function(obs,mu01,mu02,mu03,sigma01,sigma02,sigma03,mu0,kappa0,theta0,phi0,gamma0,N){
-  parvect <- pn2pw(mu01,mu02,mu03,sigma01,sigma02,sigma03,mu0,kappa0,theta0,phi0,gamma0,N)
-  obsl <- create_obslist(obs)
-  mod <- nlm(mllk,parvect,obsl,N,print.level=2,iterlim=1000,stepmax=5)
-  pn <- pw2pn(mod$estimate,N)
-  return(list(mu1=pn$mu1,mu2=pn$mu2,mu3=pn$mu3,sigma1=pn$sigma1,sigma2=pn$sigma2,sigma3=pn$sigma3,
-              mu=pn$mu,kappa=pn$kappa,theta=pn$theta,phi=pn$phi,gamma=pn$gamma,delta=pn$delta,
-              mllk=mod$minimum))
+mle <- function(obs,mu01,mu02,mu03,mu04,sigma01,sigma02,sigma03,sigma04,mu0,kappa0,gamma0,N){
+    parvect <- pn2pw(mu01,mu02,mu03,mu04,sigma01,sigma02,sigma03,sigma04,mu0,kappa0,gamma0,N)
+    obsl <- create_obslist(obs)
+    mod <- nlm(mllk,parvect,obsl,N,print.level=2,iterlim=1000,stepmax=5)
+    pn <- pw2pn(mod$estimate,N)
+    return(list(mu1=pn$mu1,mu2=pn$mu2,mu3=pn$mu3,mu4=pn$mu4,sigma1=pn$sigma1,sigma2=pn$sigma2,sigma3=pn$sigma3,sigma4=pn$sigma4,
+                mu=pn$mu,kappa=pn$kappa,gamma=pn$gamma,delta=pn$delta,mllk=mod$minimum))
 }
 
 create_obslist <- function(obs){
