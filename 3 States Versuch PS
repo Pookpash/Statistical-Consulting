@@ -1,0 +1,47 @@
+#2016_11_22_PS
+
+setwd("C:/Users/Patrick/Desktop/Robben")
+seal_clean <- read.csv("seal_data_cleaned.csv")
+seal1 <- seal_clean[which(seal_clean$sealID=="1"),]
+
+#maximumlike for 3 states without covariates
+mllk3 <- function(thetaworking,x){
+  mu <- exp(thetaworking[1:3])
+  sig <- exp(thetaworking[4:6])
+  Gamma <- matrix(thetaworking[7:15], byrow=TRUE, nrow= 3)
+  delta <- solve(t(diag(3)-Gamma+1),rep(1, 3)) 
+  T <- length(x)
+  u <- delta%*%diag(dgamma(x[1],shape=mu^2/sig^2,scale=sig^2/mu))
+  l <- log(sum(u))
+  phi <- u/sum(u)
+  for (t in 2:length(x)){
+    u <- phi%*%Gamma%*%diag(dgamma(x[t],shape=mu^2/sig^2,scale=sig^2/mu))
+    l <- l+log(sum(u))
+    phi <- u/sum(u)
+  }
+  return(-l)
+}
+
+
+llks<-rep(NA,4)
+df <- data.frame()
+for (runs in 1:4){
+  mu<-runif(3,1.5,5)
+  sig<-runif(3,1.5,5)
+  gamma0<-runif(9,1,4)
+  gamma1<- c(plogis(gamma0[1])/(plogis(gamma0[1])+plogis(gamma0[2])+plogis(gamma0[3])),plogis(gamma0[2])/(plogis(gamma0[1])+plogis(gamma0[2])+plogis(gamma0[3])),plogis(gamma0[3])/(plogis(gamma0[1])+plogis(gamma0[2])+plogis(gamma0[3])),plogis(gamma0[4])/(plogis(gamma0[4])+plogis(gamma0[5])+plogis(gamma0[6])),plogis(gamma0[5])/(plogis(gamma0[4])+plogis(gamma0[5])+plogis(gamma0[6])),plogis(gamma0[6])/(plogis(gamma0[4])+plogis(gamma0[5])+plogis(gamma0[6])),plogis(gamma0[7])/(plogis(gamma0[7])+plogis(gamma0[8])+plogis(gamma0[9])),plogis(gamma0[8])/(plogis(gamma0[7])+plogis(gamma0[8])+plogis(gamma0[9])),plogis(gamma0[9])/(plogis(gamma0[7])+plogis(gamma0[8])+plogis(gamma0[9])))
+  mod<- nlm(mllk3,c(mu,sig,gamma1),x=seal1$steplen[1:1000],print.level=1)
+  llks[runs] <- mod$minimum
+  df[runs,1] <- exp(mod$estimate[1])
+  df[runs,2] <- exp(mod$estimate[2])
+  df[runs,3] <- exp(mod$estimate[3])
+  df[runs,4] <- exp(mod$estimate[4])
+  df[runs,5] <- plogis(mod$estimate[5])
+  df[runs,6] <- plogis(mod$estimate[6])
+  print(llks[runs])
+}
+
+
+
+
+
