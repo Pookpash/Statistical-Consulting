@@ -1,3 +1,4 @@
+
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 #include <iostream>
@@ -10,7 +11,6 @@ using namespace std;
 //'@params mu is the expectation E(X) based on the distribution of X
 //'@params sigma is the Variance Var(X) based on the distribution of X
 //'@params kappa is the ... for the von Mises dist
-//'@params phi is the concentration parameter for the beta distribution. his definition is phi = alpha + beta, resp. shape1 + shape2
 
 //'Parameters for the allprobs algorithm
 //'@params nStates - number of States
@@ -56,25 +56,6 @@ arma::colvec dvm_rcpp(NumericVector x, double mu, double kappa){
         return res;
 }
 
-// [[Rcpp::export]]
-//density of beta dist
-arma::colvec dbeta_rcpp(NumericVector x, double mu, double phi){
-        
-        arma::colvec res(x.size());
-        
-        //convert mean and sd to shape1 and shape2
-        double shape1 = mu*phi;
-        double shape2 = phi*(1-mu);
-        
-        for(int i=0; i<x.size(); i++) {
-                if(!arma::is_finite(x(i)))
-                        res(i) = 1; // is missing observation
-                else
-                        res(i) = R::dbeta(x(i),shape1,shape2,0);
-        }
-        
-        return res;
-}
 
 // [[Rcpp::export]]
 // compute joint probabilities
@@ -101,13 +82,13 @@ arma::mat allprobs_rcpp(int nStates, int nObs, arma::mat data, arma::mat mumat, 
                 surf = data.cols(2,2);
                 dur = data.cols(3,3);
                 dive = data.cols(4,4);
-               
+                
                 //compute probs here
                 stepProb = dgamma_rcpp(step, mumat(i,0), sigmat(i,0));
                 angleProb = dvm_rcpp(angle, mumat(i,1), sigmat(i,1));
                 surfProb = dgamma_rcpp(surf, mumat(i,2), sigmat(i,2));
                 durProb = dgamma_rcpp(dur, mumat(i,3), sigmat(i,3));
-                diveProb = dbeta_rcpp(dive, mumat(i,4), sigmat(i,4));
+                diveProb = dgamma_rcpp(dive, mumat(i,4), sigmat(i,4));
                 
                 for(int j=0; j<nObs; j++)
                 {
@@ -117,7 +98,7 @@ arma::mat allprobs_rcpp(int nStates, int nObs, arma::mat data, arma::mat mumat, 
                 }
                 
         }
-                
+        
         return(allProbs);
 }
 
@@ -132,31 +113,21 @@ arma::mat allprobs_rcpp(int nStates, int nObs, arma::mat data, arma::mat mumat, 
 // |  5000 |        |    22.67s |       5.76s |          3.9 |
 // |  5000 |        |   106.47s |      28.10s |          3.8 |
 // | 20000 |        |    98.04s |      24.07s |          4.1 |
-        
-        
+
+
 /*** R
 gammatestdata <- c(0.041187346, 4.84, 0.039264483)
 gammatestmu <- c(0.5)
 gammatestsig <- c(2)
 dgamma(gammatestdata, shape= gammatestmu^2/gammatestsig^2, scale = gammatestsig^2/gammatestmu)
 dgamma_rcpp(gammatestdata, gammatestmu, gammatestsig)
-
-betatestdata <- c(0.041187346, 0.8, 0.039264483)
-betatestmu <- c(0.5)
-betatestsig <- c(sqrt(0.05))
-dbeta(betatestdata,shape1=2,shape2=2)
-dbeta_rcpp(betatestdata, betatestmu, betatestsig)
-
 N <- 2
 nObs <- 7
 data <- matrix(c(3,179,5,4,0.5,2,160,3,1,0.6,5,181,4,5,0.7,4,170,8,3,0.5,
                  9,182,4,2,0.4,8.8,181,2.2,2.5,0.43,6,186,2.1,0.9,0.45),nrow=7,byrow=T)
-
 mumat <- matrix(c(4,180,5,2,0.5,6,165,3,4,0.6),ncol=5,byrow=T)
 sigmat <- matrix(c(2,2,2.5,1,0.2,2.2,3,2.1,1.9,0.25),ncol=5,byrow=T)
-
 allprobs_rcpp(N,nObs,data,mumat,sigmat)
-
 allprobsR <- matrix(rep(1,N*nObs),nrow=nObs)
 for (j in 1:2){
         surf.prob  <- dive.prob <- dep.prob <- step.prob <- rep(1,nObs)
@@ -164,9 +135,8 @@ for (j in 1:2){
         angle.prob <- dvm_rcpp(data[,2],mumat[j,2],sigmat[j,2])
         surf.prob  <- dgamma(data[,3],  shape=mumat[j,3]^2/sigmat[j,3]^2, scale=sigmat[j,3]^2/mumat[j,3])
         dive.prob  <- dgamma(data[,4],  shape=mumat[j,4]^2/sigmat[j,4]^2, scale=sigmat[j,4]^2/mumat[j,4])
-        dep.prob   <- dbeta(data[,5],   shape1=mumat[j,5]*sigmat[j,5], shape2= sigmat[j,5]*(1-mumat[j,5]))
+        dep.prob   <- dgamma(data[,5],  shape=mumat[j,5]^2/sigmat[j,5]^2, scale=sigmat[j,5]^2/mumat[j,5])
         allprobsR[,j] <- surf.prob*angle.prob*dive.prob*dep.prob*step.prob
 }
 allprobsR
-
 */
