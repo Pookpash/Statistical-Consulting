@@ -8,7 +8,9 @@ library(circular) # for von Mises distribution
 lforward <- function(obs,mod,N){
   T <- dim(obs)[1]
   lalpha <- matrix(NA,T,N)
-  allprobs <- allprobs()    # allprobs matrix c++ code verwenden
+  mumat <- conv2mat(mod,N,var=F)
+  sigmat <- conv2mat(mod,N,var=T)
+  allprobs <- allprobs_rcpp(N,T,obs,mumat,sigmat)    # allprobs matrix c++ code verwenden
   u <- mod$delta*allprobs[1,]
   l <- log(sum(u))
   phi <- u/sum(u)   
