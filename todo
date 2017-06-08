@@ -1,9 +1,17 @@
-änderung
-Steplength überprüfen mit moveHMM prepdata
+Dorian & Svenja cleaning updaten. (muss nachher fertig sein)
 
-(Patrick) Turning angle Geradengleichung + Formel für turning angle
+Sina & Till Funktionen überprüfen
 
-(optional) allprobs code in c++
+Patrick Modelle rechnen
+
+nächster Termin Dienstag 10:15 Uhr
+
+Rechenliste Subsamp(10)
+3state(20) Sina Dorian
+2state(20) Patrick Svenja
+4state(10) Till Svenja
+
+
 
 variable names
 steplength <- step
@@ -12,8 +20,5 @@ surface duration <- surf.dur
 turning angle <- angle
 %bathymetry <- depth
 
-
-Sonstiges:
-distr. für turning angles von Mises
-distr. für %dive dep beta
+subsamp (5,10,20,50)
 
