@@ -2,7 +2,9 @@ library(CircStats) # for von Mises distribution
 # besser circular statt CircStats?
 library(boot) # for logit
 
-setwd("C:/Users/User/Documents/Studium_MA/4. Semester/Statistical Consulting/R")
+setwd("C:/Users/Admin/Documents/Robben")
+data <- read.csv("subsample_10.csv")
+
 
 # theta(mean) & phi(concentration) of Beta distr.
 # ttheta <- logit(theta)
@@ -14,6 +16,7 @@ setwd("C:/Users/User/Documents/Studium_MA/4. Semester/Statistical Consulting/R")
 ## function that converts 'natural' parameters (possibly constrained) to 'working' parameters (all of which are real-valued) - this is only necessary since I use the unconstrained optimizer nlm() below 
 # mu & kappa: von Mises distr.
 pn2pw <- function(mu1,mu2,mu3,mu4,sigma1,sigma2,sigma3,sigma4,mu,kappa,gamma,N){   
+        mu.vonmises <- mu
         for(i in 1:4){
                 mu <- cbind(mu1, mu2, mu3, mu4)
                 assign(paste0("tmu", i), log(mu[,i]))    
@@ -22,8 +25,8 @@ pn2pw <- function(mu1,mu2,mu3,mu4,sigma1,sigma2,sigma3,sigma4,mu,kappa,gamma,N){
                 sigma <- cbind(sigma1, sigma2, sigma3, sigma4)
                 assign(paste0("tsigma", i), log(sigma[,i]))    
         } 
-        tmu <-  kappa*cos(mu) # https://github.com/TheoMichelot/moveHMM/blob/master/R/n2w.R
-        tkappa <- kappa*sin(mu)   
+        tmu <-  kappa*cos(mu.vonmises) # https://github.com/TheoMichelot/moveHMM/blob/master/R/n2w.R
+        tkappa <- kappa*sin(mu.vonmises)   
         tgamma <- NULL
         if(N>1){
                 foo <- log(gamma/diag(gamma))
@@ -58,13 +61,13 @@ pw2pn <- function(parvect,N){
 }
 
 conv2mat <- function(plist, N, var = F){
-        plist <- plist[1:(length(parvect)-2)]
+        plist <- plist[1:(length(plist)-2)]
         if (var == T){
                 vecv <- c(plist$sigma1,plist$sigma2,plist$sigma3,plist$kappa,plist$sigma4)
                 mat <- matrix(vecv, ncol = N, nrow = (length(plist)/2),byrow=T)
         } else {
-        vecm <- c(plist$mu1,plist$mu2,plist$mu3,plist$mu,plist$mu4)
-        mat <- matrix(vecm, ncol = N, nrow = (length(plist)/2),byrow=T)
+                vecm <- c(plist$mu1,plist$mu2,plist$mu3,plist$mu,plist$mu4)
+                mat <- matrix(vecm, ncol = N, nrow = (length(plist)/2),byrow=T)
         return(mat)
         }
 }
@@ -72,12 +75,12 @@ conv2mat <- function(plist, N, var = F){
 mllk <- function(parvect,obsl,N){ #obsl has to be a list!
         vec <- rep(NA,length(obsl))
         lpn <- pw2pn(parvect,N)
-        mumat <- conv2mat(lpn, N, var = F)
-        sigmat <- conv2mat(lpn, N, var = T)
+        mumat <- t(conv2mat(lpn, N, var = F))
+        sigmat <- t(conv2mat(lpn, N, var = T))
         gamma <- lpn$gamma
         for(i in 1:length(obsl)){
                 n <- length(obsl[[i]][,1])
-                allprobs <- allprobs_rcpp(N,data[,relevant columns],mumat,sigmat)#needs to be updated
+                allprobs <- allprobs_rcpp(N,n,as.matrix(obsl[[i]][,c(13,14,7,6,5)]),mumat,sigmat)
                 foo <- lpn$delta  
                 lscale <- 0
                 lscale <- forwardalgo(foo, gamma, allprobs, lscale, n)
@@ -86,6 +89,7 @@ mllk <- function(parvect,obsl,N){ #obsl has to be a list!
         lk <- sum(vec)
         return(-lk)
 }
+
 mle <- function(obs,mu01,mu02,mu03,mu04,sigma01,sigma02,sigma03,sigma04,mu0,kappa0,gamma0,N){
         parvect <- pn2pw(mu01,mu02,mu03,mu04,sigma01,sigma02,sigma03,sigma04,mu0,kappa0,gamma0,N)
         obsl <- create_obslist(obs)
@@ -110,9 +114,39 @@ fitmult <- function(obs,n_fits,N){
         for (i in 1:n_fits){
                 mat <- matrix(runif(N^2,0,1), nrow = N)
                 mat <- mat/apply(mat,1,sum) 
-                modl[[i]] <- mle(obs,c(runif(N,20,200)),c(runif(N,40,300)),c(runif(N,1,50)),c(runif(N,10,200)),
-                                 c(runif(N,2,200)),c(runif(N,20,70)),c(runif(N,1,30)),c(runif(N,10,150)),
+                modl[[i]] <- mle(obs,c(runif(N,3,45)),c(runif(N,80,200)),c(runif(N,25,60)),c(runif(N,5,200)),c(runif(N,1,10)),
+                                 c(runif(N,25,100)),c(runif(N,5,50)),c(runif(N,10,100)),c(runif(N,-3,3)),c(runif(N,1,10)),
                                  mat, N)
         }
         return(modl)
 }
+
+#test
+
+fitmult(data,1,3)
+
+#troubleshooting
+
+N <- 2 
+obsl <- create_obslist(data)
+mat <- matrix(runif(N^2,0,1), nrow = N)
+mat <- mat/apply(mat,1,sum) 
+parvect <- pn2pw(c(runif(N,3,35)),c(runif(N,80,175)),c(runif(N,30,55)),c(runif(N,10,100)),c(runif(N,5,10)),
+                 c(runif(N,25,100)),c(runif(N,10,50)),c(runif(N,10,100)),c(runif(N,0.1,1)),c(runif(N,4,7)),
+                 mat,N)
+
+vec <- rep(NA,length(obsl))
+lpn <- pw2pn(parvect,N)
+mumat <- t(conv2mat(lpn, N, var = F))
+sigmat <- t(conv2mat(lpn, N, var = T))
+gamma <- lpn$gamma
+
+i <- 1
+
+n <- length(obsl[[i]][,1])
+allprobs <- allprobs_rcpp(N,n,as.matrix(obsl[[i]][,c(13,14,7,6,5)]),mumat,sigmat)#gives NaNs, and therefore loglike -inf later!
+allprobs
+foo <- lpn$delta
+lscale <- 0
+lscale <- forwardalgo(foo, gamma, allprobs, lscale, n)
+vec[i] <- lscale
