@@ -16,6 +16,7 @@ fitmult <- function(obs,n_cov,n_fits,N){
     return(modl)
 }
 
+### include beta0 and delta0 in mle above
 ###  see https://github.com/TheoMichelot/moveHMM/blob/master/R/fitHMM.R line 288
 beta0 <- matrix(c(rep(-1.5,N*(N-1)),rep(0,N*(N-1)*n_cov)), nrow=n_cov+1,byrow=TRUE)  # why -1.5 and 0 ?
 delta0 <- rep(1,N)/N
