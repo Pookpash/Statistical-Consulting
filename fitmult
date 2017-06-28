@@ -1,0 +1,21 @@
+#Code to run a specific N-state model multiple times with different starting values (with all 4 variables, adjust accordingly)
+# n_cov covariates and intercept
+fitmult <- function(obs,n_cov,n_fits,N){
+    modl <- list()
+    for (i in 1:n_fits){
+        covs <- matrix(rep(1,dim(obs)[1]),"covariate1",ncol=n_cov+1) # replace covariate1 by vector of corresponding covariate (e.g. data$sex)
+        modl[[i]] <- mle(obs,mu01=c(runif(N,3,35)),mu02=c(runif(N,80,175)),mu03=c(runif(N,30,55)),mu04=c(runif(N,10,150)),sigma01=c(runif(N,2,10)),
+                         sigma02=c(runif(N,25,100)),sigma03=c(runif(N,10,30)),sigma04=c(runif(N,10,80)),mu0=c(runif(N,-2,2)),kappa0=c(runif(N,2,7)),
+                         covs,N)
+        # n_cov = # covariates
+        # covs = designmatrix of covariates 
+        # adjust order and input of mle !!!!! (mle has not been changed yet)
+        # input of formula (for the eta)? I don't know if this has to be included here
+       assign(paste0("mod",i),modl[[i]],env = .GlobalEnv) # save each model
+    }
+    return(modl)
+}
+
+###  see https://github.com/TheoMichelot/moveHMM/blob/master/R/fitHMM.R line 288
+beta0 <- matrix(c(rep(-1.5,N*(N-1)),rep(0,N*(N-1)*n_cov)), nrow=n_cov+1,byrow=TRUE)  # why -1.5 and 0 ?
+delta0 <- rep(1,N)/N
