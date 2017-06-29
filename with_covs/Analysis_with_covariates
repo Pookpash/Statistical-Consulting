@@ -1,8 +1,8 @@
 library(CircStats) # for von Mises distribution
 library(boot) # for logit
 
-setwd("C:/Users/User/Documents/Studium_MA/4. Semester/Statistical Consulting/R")
-seal10 <- read.csv("C:\\Users\\User\\Documents\\Studium_MA\\4. Semester\\Statistical Consulting\\subsamples_fin\\subsample_10.csv",header=T)
+setwd("C:/Users/Pook/Documents/Robben")
+seal10 <- read.csv("subsample_10.csv",header=T)
 
 ## function that converts 'natural' parameters (possibly constrained) to 'working' parameters (all of which are real-valued) - this is only necessary since I use the unconstrained optimizer nlm() below 
 # mu & kappa: von Mises distr.
@@ -39,7 +39,7 @@ pw2pn <- function(parvect,N){
 }
 
 conv2mat <- function(plist, N, var = F){
-   if (var == T){
+  if (var == T){
     vecv <- c(plist$sigma1,plist$sigma2,plist$sigma3,plist$kappa,plist$sigma4)
     mat <- matrix(vecv, ncol = N, nrow = 5,byrow=T) # falls surf.dur entfernt wird, Spaltenanzahl -1
   } else {
@@ -49,21 +49,38 @@ conv2mat <- function(plist, N, var = F){
   }
 }
 
-######### hier mllk einfügen (Till)
+
+mllk <- function(parvect,obsl,N){ #obsl has to be a list!
+  vec <- rep(NA,length(obsl))
+  lpn <- pw2pn(parvect,N)
+  mumat <- t(conv2mat(lpn, N, var = F))
+  sigmat <- t(conv2mat(lpn, N, var = T))
+  for(i in 1:length(obsl)){
+    n <- length(obsl[[i]][,1])
+    gamma <- trMatrix_rcpp(N, lpn$beta, covs.global) #hier noch ein Problem, da covs.global nicht mit obsl übereinstimmt
+    allprobs <- allprobs_rcpp(N,n,as.matrix(obsl[[i]][,c(13,14,7,6,5)]),mumat,sigmat)
+    foo <- c(rep(1/N,N)) #hier "delta" berechnen, bisher nur fix, damit Berechnungen möglich sind, muss wohl in nlm geschätzt werden.
+    lscale <- 0
+    lscale <- forwardalgo_w_cov(foo,gamma, allprobs, lscale, n)
+    vec[i] <- lscale
+  }
+  lk <- sum(vec)
+  return(-lk)
+}
 
 create_obslist <- function(obs){
   obslist <- list()
   for (i in 1:length(unique(obs[,"ID_burst"]))) {
-    obslist[[i]]<-obs[which(obs[,"ID_burst"]==unique(obs[,"ID_burst"])[i]),]   # so gelöst, da ID_burst nicht 1,2,3... benannt
+    obslist[[i]]<-obs[which(obs[,"ID_burst"]==unique(obs[,"ID_burst"])[i]),]
   }
-  obslist <- Filter(length,obslist)   # Was macht der Befehl?
+  obslist <- Filter(length,obslist)
   return(obslist)
 }
 
 mle <- function(obs,mu01,mu02,mu03,mu04,sigma01,sigma02,sigma03,sigma04,kappa0,beta0,covs.mat,N){
   parvect <- pn2pw(mu01,mu02,mu03,mu04,sigma01,sigma02,sigma03,sigma04,kappa0,beta0,N)
   obsl <- create_obslist(obs)
-  covs.global <<- covs.mat # Till: Bezeichnung in C++ anpassen
+  covs.global <<- covs.mat
   mod <- nlm(mllk,parvect,obsl,N,print.level=2,iterlim=1000,stepmax=5)
   pn <- pw2pn(mod$estimate,N)
   return(list(mu1=pn$mu1,mu2=pn$mu2,mu3=pn$mu3,mu4=pn$mu4,sigma1=pn$sigma1,sigma2=pn$sigma2,sigma3=pn$sigma3,sigma4=pn$sigma4,
