@@ -1,9 +1,9 @@
-plotresults <- function(res,N, colvec){
+plotresults <- function(res,N, colvec,bildvec){ #bildvec hat 4 Einträge, jeweils die rechten grenzen im Plot, linke Grenzen und Turning angle sind klar
   par(mfrow=c(3,2),oma=c(0,0,2,0))
-  x1 <- seq(1,50,length=1000)
-  x2 <- seq(1,300,length=1000)
-  x3 <- seq(0.1,90,length=1000)
-  x4 <- seq(0.1,240,length=1000)
+  x1 <- seq(1,bildvec[1],length=1000)
+  x2 <- seq(1,bildvec[2],length=1000)
+  x3 <- seq(0.1,bildvec[3],length=1000)
+  x4 <- seq(0.1,bildvec[4],length=1000)
   x5 <- seq(-pi,pi,length=1000)
   
   m1 <- rep(0,N)
