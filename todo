@@ -1,9 +1,9 @@
 
-Patrick plotresults 
-Dorian Residuen plots & 
-Svenja fitmult "save funktion"
-Sina transformation
-Till mllk und c++ - von mises mu = 0 in mllk setzen
+Patrick Standardiesieren (mit apply wenns geht)
+Dorian Residuen plots & Funktionen (mit covariates) (erst die plots für ohne covariates updaten)
+Svenja model fitting
+Sina model fitting
+Till model fitting     mises mu = 0 in c++ setzen, 
 
 
 
