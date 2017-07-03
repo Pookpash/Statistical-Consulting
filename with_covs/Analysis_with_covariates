@@ -59,8 +59,8 @@ mllk <- function(parvect,obsl,N,covs){ #covs as a a vector of columns, e.g. c(1,
         for(i in 1:length(obsl)){
                 n <- length(obsl[[i]][,1])
                 covs.mat <- matrix(c(rep(1,dim(obsl[[i]])[1]),obsl[[i]][,covs]),ncol=length(covs)+1,byrow = F)
-                gamma <- trMatrix_rcpp(N, lpn$beta, covs.mat) #hier noch ein Problem, da covs.global nicht mit obsl übereinstimmt
-                allprobs <- allprobs_rcpp(N,n,as.matrix(obsl[[i]][,c(13,14,7,6,5)]),mumat,sigmat)
+                gamma <- trMatrix_rcpp(N, t(lpn$beta), covs.mat) # t(lpn$beta), ist das richtig? ohne funzt es nicht.
+                allprobs <- allprobs_rcpp(N,n,as.matrix(obsl[[i]][,c(13,14,7,6,5)]),mumat,sigmat) 
                 foo <- c(rep(1/N,N)) #hier "delta" berechnen, bisher nur fix, damit Berechnungen möglich sind, muss wohl in nlm geschätzt werden.
                 lscale <- 0
                 lscale <- forwardalgo_w_cov(foo,gamma, allprobs, lscale, n)
@@ -91,6 +91,7 @@ mle <- function(obs,mu01,mu02,mu03,mu04,sigma01,sigma02,sigma03,sigma04,kappa0,b
 ################ Kovariablen standardisieren!
 
 #Code to run a specific N-state model multiple times with different starting values (with all 4 variables, adjust accordingly)
+# n_cov covariates and intercept
 fitmult <- function(obs,n_fits,covs,N){ #covs as a a vector of columns, e.g. c(1,2,5)]
         modl <- list()
         for (i in 1:n_fits){
@@ -102,4 +103,4 @@ fitmult <- function(obs,n_fits,covs,N){ #covs as a a vector of columns, e.g. c(1
         return(modl)
 }
 
-test<-fitmult(seal10,1,c(8),2)
+test<-fitmult(seal10,1,c(8),3)
