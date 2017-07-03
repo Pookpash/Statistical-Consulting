@@ -92,7 +92,7 @@ mle <- function(obs,mu01,mu02,mu03,mu04,sigma01,sigma02,sigma03,sigma04,kappa0,b
 
 #Code to run a specific N-state model multiple times with different starting values (with all 4 variables, adjust accordingly)
 # n_cov covariates and intercept
-fitmult <- function(obs,n_fits,covs,N){ # covs as an array of form: data[,c(...)]
+fitmult <- function(obs,n_fits,covs,N){ #covs as a a vector of columns, e.g. c(1,2,5)]
         modl <- list()
         for (i in 1:n_fits){
                 modl[[i]] <- mle(obs,mu01=c(runif(N,3,35)),mu02=c(runif(N,80,175)),mu03=c(runif(N,30,55)),mu04=c(runif(N,10,150)),
