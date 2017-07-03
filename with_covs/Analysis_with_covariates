@@ -104,23 +104,3 @@ fitmult <- function(obs,n_fits,covs,N){ # covs as an array of form: data[,c(...)
 }
 
 test<-fitmult(seal10,1,c(8),2)
-  pn <- pw2pn(mod$estimate,N)
-  return(list(mu1=pn$mu1,mu2=pn$mu2,mu3=pn$mu3,mu4=pn$mu4,sigma1=pn$sigma1,sigma2=pn$sigma2,sigma3=pn$sigma3,sigma4=pn$sigma4,
-              kappa=pn$kappa,beta=pn$beta,mllk=mod$minimum))
-}
-
-################ Kovariablen standardisieren!
-
-#Code to run a specific N-state model multiple times with different starting values (with all 4 variables, adjust accordingly)
-# n_cov covariates and intercept
-fitmult <- function(obs,n_cov,covs,n_fits,N){ # covs as an array of form: data[,c(...)]
-  modl <- list()
-  for (i in 1:n_fits){
-    covs.mat <- matrix(c(rep(1,dim(obs)[1]),covs),ncol=n_cov+1,byrow = F) # replace covariate1 by vector of corresponding covariate (e.g. data$sex)
-    modl[[i]] <- mle(obs,mu01=c(runif(N,3,35)),mu02=c(runif(N,80,175)),mu03=c(runif(N,30,55)),mu04=c(runif(N,10,150)),
-                     sigma01=c(runif(N,2,10)),sigma02=c(runif(N,25,100)),sigma03=c(runif(N,10,30)),sigma04=c(runif(N,10,80)),
-                     kappa0=c(runif(N,2,7)),beta0=c(runif(N*(N-1),-3,-1),rnorm(n_cov*N*(N-1))),covs.mat,N)
-    assign(paste0("mod",i),modl[[i]],env = .GlobalEnv) # save each model
-  }
-  return(modl)
-}
