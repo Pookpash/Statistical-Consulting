@@ -91,7 +91,6 @@ mle <- function(obs,mu01,mu02,mu03,mu04,sigma01,sigma02,sigma03,sigma04,kappa0,b
 ################ Kovariablen standardisieren!
 
 #Code to run a specific N-state model multiple times with different starting values (with all 4 variables, adjust accordingly)
-# n_cov covariates and intercept
 fitmult <- function(obs,n_fits,covs,N){ #covs as a a vector of columns, e.g. c(1,2,5)]
         modl <- list()
         for (i in 1:n_fits){
