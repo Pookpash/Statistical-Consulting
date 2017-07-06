@@ -1,11 +1,9 @@
 
-Patrick Standardiesieren (mit apply wenns geht)
-Dorian Residuen plots & Funktionen (mit covariates) (erst die plots für ohne covariates updaten)
-Svenja model fitting
-Sina model fitting
-Till model fitting     mises mu = 0 in c++ setzen, 
-
-
+Patrick Daten standardieseren + rumschicken, (dist2coast; dist2h; dist2f; temp; salinty)
+Dorian residuen (w covs) nach obsl splitten, beide teilfunktionen
+Svenja
+Sina 
+Till 
 
 variable names
 steplength <- step
