@@ -1,0 +1,54 @@
+setwd("C:/Users/Patrick/Desktop/RobbenSEM17")
+data1 <- read.csv("subsample_1.csv")
+data5 <- read.csv("subsample_5.csv")
+data10 <- read.csv("subsample_10.csv")
+data20 <- read.csv("subsample_20.csv")
+data50b <- read.csv("subsample_50.csv")
+
+
+Standartisieren it scale
+
+%k=1
+data1$dist2coast <- scale(data1$dist2coast)
+data1$dist2haulout <- scale(data1$dist2haulout)
+data1$dist2fishingnet <- scale(data1$dist2fishingnet)
+data1$temperature <- scale(data1$temperature)
+data1$salinty <- scale(data1$salinty)
+
+
+%k=5
+data5$dist2coast <- scale(data5$dist2coast)
+data5$dist2haulout <- scale(data5$dist2haulout)
+data5$dist2fishingnet <- scale(data5$dist2fishingnet)
+data5$temperature <- scale(data5$temperature)
+data5$salinty <- scale(data5$salinty)
+
+
+%k=10
+data10$dist2coast <- scale(data10$dist2coast)
+data10$dist2haulout <- scale(data10$dist2haulout)
+data10$dist2fishingnet <- scale(data10$dist2fishingnet)
+data10$temperature <- scale(data10$temperature)
+data10$salinty <- scale(data10$salinty)
+
+
+%k=20
+data20$dist2coast <- scale(data20$dist2coast)
+data20$dist2haulout <- scale(data20$dist2haulout)
+data20$dist2fishingnet <- scale(data20$dist2fishingnet)
+data20$temperature <- scale(data20$temperature)
+data20$salinty <- scale(data20$salinty)
+
+
+%k=50
+data50$dist2coast <- scale(data50$dist2coast)
+data50$dist2haulout <- scale(data50$dist2haulout)
+data50$dist2fishingnet <- scale(data50$dist2fishingnet)
+data50$temperature <- scale(data50$temperature)
+data50$salinty <- scale(data50$salinty)
+
+write.csv(data1, "subsample_1scaled.csv")
+write.csv(data5, "subsample_5scaled.csv")
+write.csv(data10, "subsample_10scaled.csv")
+write.csv(data20, "subsample_20scaled.csv")
+write.csv(data50, "subsample_50scaled.csv")
