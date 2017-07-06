@@ -5,6 +5,13 @@ Svenja tpm visualisieren
 Sina Konfidenzintervalle informieren (evtl. programmieren)
 Till delta implementieren + model fit
 
+für die model fits (N = 3, subsamp = 10):
+Dorian dist2coast
+Sina dist2h
+Svenja temp
+Patrick dist2f
+Till salinty, sex
+
 generell:
 
 Viterbi
