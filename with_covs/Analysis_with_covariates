@@ -2,7 +2,8 @@ library(CircStats) # for von Mises distribution
 library(boot) # for logit
 
 setwd("C:/Users/Admin/Documents/Robben")
-seal10 <- read.csv("subsample_10.csv",header=T)
+seal10 <- read.csv("subsample_10scaled.csv",header=T)
+seal10 <- seal10[,-1] #aus irgendeinem Grund eine Spalte zuviel...
 
 ## function that converts 'natural' parameters (possibly constrained) to 'working' parameters (all of which are real-valued) - this is only necessary since I use the unconstrained optimizer nlm() below 
 # mu & kappa: von Mises distr.
