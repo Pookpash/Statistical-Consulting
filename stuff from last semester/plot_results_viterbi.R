@@ -33,43 +33,6 @@ plotresults <- function(res,N,sealtype,densvec=c(rep(0.1,4))){
   par(mfrow=c(1,1))
 }
 
-viterbi<-function(obs,mod,N){
-  Gamma <- mod$gamma
-  delta <- mod$delta
-  allStates <- NULL
-  obsl <- create_obslist(obs)
-  for(i in 1:length(obsl)){
-    T <- dim(obsl[[i]])[1]
-    allprobs <- matrix(rep(1,N*T),nrow=T)
-    ind.surf <- which(!is.na(obsl[[i]][,2]))
-    ind.dive <- which(!is.na(obsl[[i]][,3]))
-    ind.dep <- which(!is.na(obsl[[i]][,4]))
-    ind.step <- which(!is.na(obsl[[i]][,5]))
-    for (j in 1:N){
-      surf.prob <- dive.prob <- dep.prob <- step.prob <- rep(1,T)
-      surf.prob[ind.surf] <- dgamma(obsl[[i]][ind.surf, 2],shape=mod$mu1[j]^2/mod$sigma1[j]^2,scale=mod$sigma1[j]^2/mod$mu1[j])
-      dive.prob[ind.dive] <- dgamma(obsl[[i]][ind.dive, 3],shape=mod$mu2[j]^2/mod$sigma2[j]^2,scale=mod$sigma2[j]^2/mod$mu2[j])
-      dep.prob[ind.dep] <- dgamma(obsl[[i]][ind.dep, 4],shape=mod$mu3[j]^2/mod$sigma3[j]^2,scale=mod$sigma3[j]^2/mod$mu3[j])
-      step.prob[ind.step] <- dgamma(obsl[[i]][ind.step, 5],shape=mod$mu4[j]^2/mod$sigma4[j]^2,scale=mod$sigma4[j]^2/mod$mu4[j])
-      allprobs[,j] <- surf.prob*dive.prob*dep.prob*step.prob
-    }
-    xi <- matrix(0,as.integer(T),N)
-    u <- delta%*%diag(N)
-    xi[1,] <- u/sum(u)
-    for (t in 2:T){
-      u<-apply(xi[t-1,]*Gamma,2,max)%*%diag(allprobs[t,])
-      xi[t,] <- u/sum(u)
-    }
-    iv<-numeric(T)
-    iv[T] <-which.max(xi[T,])
-    for (t in (T-1):1){ 
-      iv[t] <- which.max(Gamma[,iv[t+1]]*xi[t,])
-    }
-    allStates <- c(allStates,iv)
-  }
-  return(allStates)
-}
-
 plot_viterbi <- function(stateobj,sealtype,obs,mod,N){
   states_surf <- as.data.frame(stateobj)
   states_surf$col <- states_surf[,1]+7
