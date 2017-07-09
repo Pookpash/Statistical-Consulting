@@ -85,10 +85,10 @@ create_obslist <- function(obs){
 mle <- function(obs,mu01,mu02,mu03,mu04,sigma01,sigma02,sigma03,sigma04,kappa0,delta0,beta0,covs,N){
     parvect <- pn2pw(mu01,mu02,mu03,mu04,sigma01,sigma02,sigma03,sigma04,kappa0,delta0,beta0,N)
     obsl <- create_obslist(obs)
-    mod <- nlm(mllk,parvect,obsl,N,covs,print.level=2,iterlim=1000,stepmax=5)
+    mod <- nlm(mllk,parvect,obsl,N,covs,hessian=T,print.level=2,iterlim=1000,stepmax=5)
     pn <- pw2pn(mod$estimate,N)
     return(list(mu1=pn$mu1,mu2=pn$mu2,mu3=pn$mu3,mu4=pn$mu4,sigma1=pn$sigma1,sigma2=pn$sigma2,sigma3=pn$sigma3,sigma4=pn$sigma4,
-                kappa=pn$kappa,delta=pn$delta,beta=pn$beta,mllk=mod$minimum))
+                kappa=pn$kappa,delta=pn$delta,beta=pn$beta,mllk=mod$minimum,hessmat=mod$hessian))
 }
 
 viterbi<-function(obs,mod,covs,N){ #mod h.t.b. defined as mod[[x]] otherwise the $-operator does not work
@@ -121,6 +121,16 @@ viterbi<-function(obs,mod,covs,N){ #mod h.t.b. defined as mod[[x]] otherwise the
     return(allStates)
 }
 
+confints <- function(mod){ #first just mu1 to test
+    muvec <- mod$mu1
+    fisher_info <- solve(-mod$hessmat)
+    prop_sigma<-sqrt(diag(fisher_info))
+    prop_sigma<-diag(prop_sigma)
+    upper<-muvec+1.96*prop_sigma[1:3]
+    lower<-muvec-1.96*prop_sigma[1:3]
+    interval<-data.frame(upper=upper, lower=lower)
+}
+
 #Code to run a specific N-state model multiple times with different starting values (with all 4 variables, adjust accordingly)
 # n_cov covariates and intercept
 fitmult <- function(obs,n_fits,covs,N){ #covs as a a vector of columns, e.g. c(1,2,5)]
@@ -134,7 +144,9 @@ fitmult <- function(obs,n_fits,covs,N){ #covs as a a vector of columns, e.g. c(1
     return(modl)
 }
 
-test<-fitmult(seal10[1:200,],1,c(4),3)
+test<-fitmult(seal10[1:1000,],1,c(8),3)
 
-testvit <- viterbi(seal10[1:200,],test[[1]],c(4),3)
+testvit <- viterbi(seal10[1:500,],test[[1]],c(8),3)
 
+testconf <- confints(test[[1]]) #hessian almost never invertible and if so NaN bc of sqrt(-...)
+                                #so i think hessian has also to be transformed back maybe?
