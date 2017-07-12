@@ -1,23 +1,3 @@
-#2016_10_30_TW
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#------------------------------------------------------------------------------#
-# important: run the User defined functions at the bottom of the script first! #
-#                 (after loading the packages of course!)                      #
-#------------------------------------------------------------------------------#
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
-# table of contents                       #        
-#                                         #
-# 1. load data and packages               #
-# 2. prepare data                         #
-# 3. exploratory data analysis            #
-#   3.1 some general numbers              #
-#   3.2 visualize movement                #
-#   3.3 histograms of different variables #
-#   3.4 correlation matrices              #
-#   3.5 ACF's
-# Appendix (UDF's)                        #
 
 ### 1. load data and packages
 setwd("C:/Users/Pook/Documents/Robben")
@@ -26,109 +6,6 @@ require(moveHMM)
 require(reshape2)
 require(ggplot2)
 require(grid)
-
-### 2. prepare data
-
-#remove unecessary columns for visualization and exploration
-cols.dont.want <- c("X", "datetime","date", "time")
-seals <- seal_clean[, ! names(seal_clean) %in% cols.dont.want, drop = F]
-
-#rename lat and lon to y and x to use in moveHMM
-colnames(seals)[colnames(seals) == "start.lon"] <- "x"
-colnames(seals)[colnames(seals) == "start.lat"] <- "y"
-
-#create data for every seal
-seal1 <- seals[which(seals$sealID=="1"),]
-seal2 <- seals[which(seals$sealID=="2"),]
-seal3 <- seals[which(seals$sealID=="3"),]
-seal4 <- seals[which(seals$sealID=="4"),]
-seal5 <- seals[which(seals$sealID=="5"),]
-seal6 <- seals[which(seals$sealID=="6"),]
-seal7 <- seals[which(seals$sealID=="7"),]
-seal8 <- seals[which(seals$sealID=="8"),]
-seal9 <- seals[which(seals$sealID=="9"),]
-seal10 <- seals[which(seals$sealID=="10"),]
-seal11 <- seals[which(seals$sealID=="11"),]
-seal12 <- seals[which(seals$sealID=="12"),]
-seal13 <- seals[which(seals$sealID=="13"),]
-seal14 <- seals[which(seals$sealID=="14"),]
-seal15 <- seals[which(seals$sealID=="15"),]
-seal16 <- seals[which(seals$sealID=="16"),]
-seal17 <- seals[which(seals$sealID=="17"),]
-seal18 <- seals[which(seals$sealID=="18"),]
-seal19 <- seals[which(seals$sealID=="19"),]
-seal20 <- seals[which(seals$sealID=="20"),]
-seal21 <- seals[which(seals$sealID=="21"),]
-
-### 3. exploratory data analysis
-
-## 3.1 some general numbers:
-#
-# male: 16, female: 5
-# grey: 10, harbour: 21
-
-## 3.2 visualize movement of all seals(first 1000 datapoints ~200 days)
-plotSat(data=seal1[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal2[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal3[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal4[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal5[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal6[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal7[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal8[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal9[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal10[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal11[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal12[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal13[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal14[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal15[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal16[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal17[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal18[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal19[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal20[1:1000,], zoom= 10, col ="yellow")
-plotSat(data=seal21[1:1000,], zoom= 10, col ="yellow")
-
-## 3.3 histograms of different variables
-par(mfrow=c(3,7))
-seallist <- list(seal1,seal2,seal3,seal4,seal5,seal6,seal7,seal8,seal9,seal10,seal11,seal12,seal13,seal14,seal15,seal16,seal17,seal18,seal19,seal20,seal21)
-# for smaller monitors use
-# par(mfrow=c(3,3))
-# seallist <- list(seal1,seal2,seal3,seal4,seal5,seal6,seal7,seal8,seal9)
-
-# surf duration
-for (i in seallist){
-        hist(i[,7],freq=F)
-}
-# not very useful lets try to do two for different scales
-for (i in seallist){
-        hist(i[,7],freq=F,breaks=200)
-}
-# lets look more into the area with values <500
-for (i in seallist){
-        hist(i[,7],freq=F,breaks=200,xlim=c(0,500))
-}
-
-#better! now for values >500
-for (i in seallist){
-        hist(i[,7],freq=F,breaks=200,xlim=c(500,8000),ylim=c(0,0.0001))
-}
-
-# same for dive duration (different scales!!)
-for (i in seallist){
-        hist(i[,8],freq=F)
-}
-
-# same for max dep (different scales!!)
-for (i in seallist){
-        hist(i[,9],freq=F)
-}
-
-# same for dist2coast (different scales!!)
-for (i in seallist){
-        hist(i[,11],freq=F)
-}
 
 ## 3.4 correlation matrices
 
@@ -151,33 +28,6 @@ upper_tri1 <- get_upper_tri(cormat1)
 melted_cormat1 <- melt(upper_tri1, na.rm = TRUE)
 cormatplot1<- ggheatmap(mc=melted_cormat1)
 s1_cor<-fin_corplot(ggheatmap=cormatplot1)
-
-seal2_red <- seal2[,7:13]
-seal2_red <- seal2_red[,-4]
-cormat2 <- round(cor(seal2_red),2)
-cormat2 <- reorder_cormat(cormat2)
-upper_tri2 <- get_upper_tri(cormat2)
-melted_cormat2 <- melt(upper_tri2, na.rm = TRUE)
-cormatplot2<- ggheatmap(mc=melted_cormat2)
-s2_cor<-fin_corplot(ggheatmap=cormatplot2)
-
-seal3_red <- seal3[,7:13]
-seal3_red <- seal3_red[,-4]
-cormat3 <- round(cor(seal3_red),2)
-cormat3 <- reorder_cormat(cormat3)
-upper_tri3 <- get_upper_tri(cormat3)
-melted_cormat3 <- melt(upper_tri3, na.rm = TRUE)
-cormatplot3<- ggheatmap(mc=melted_cormat3)
-s3_cor<-fin_corplot(ggheatmap=cormatplot3)
-
-seal4_red <- seal4[,7:13]
-seal4_red <- seal4_red[,-4]
-cormat4 <- round(cor(seal4_red),2)
-cormat4 <- reorder_cormat(cormat4)
-upper_tri4 <- get_upper_tri(cormat4)
-melted_cormat4 <- melt(upper_tri4, na.rm = TRUE)
-cormatplot4<- ggheatmap(mc=melted_cormat4)
-s4_cor<-fin_corplot(ggheatmap=cormatplot4)
 
 multiplot(s1_cor,s2_cor,s3_cor,s4_cor,cols = 2)
 
