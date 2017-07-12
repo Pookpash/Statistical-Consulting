@@ -138,7 +138,9 @@ confints <- function(mod){ #first just mu1 to test
 fitmult <- function(obs,n_fits,covs,N,cores){ #covs as a a vector of columns, e.g. c(1,2,5)]
   cl <- makeCluster(cores)
   registerDoParallel(cl)
-  modl <- foreach (numfit = 1:n_fits, .combine = list, .multicombine = T) %do%
+  modl <- foreach (numfit = 1:n_fits, .combine = list, .multicombine = T ,.packages = c("CircStats","boot"),
+                   .export = c("mle", "pn2pw", "create_obslist", "pw2pn", "mllk", "conv2mat","trMatrix_rcpp", "allprobs_rcpp", "forwardalgo_w_cov"),
+                   .noexport = c("trMatrix_rcpp", "allprobs_rcpp", "forwardalgo_w_cov")) %dopar%
     mle(obs,mu01=c(runif(N,3,35)),mu02=c(runif(N,80,175)),mu03=c(runif(N,30,55)),mu04=c(runif(N,10,150)),
     sigma01=c(runif(N,2,10)),sigma02=c(runif(N,25,100)),sigma03=c(runif(N,10,30)),sigma04=c(runif(N,10,80)),
     kappa0=c(runif(N,2,7)),delta0 = c(rep(1,N)),beta0=c(runif(N*(N-1),-3,-1),rnorm(length(covs)*N*(N-1))),covs,N)
@@ -148,7 +150,3 @@ fitmult <- function(obs,n_fits,covs,N,cores){ #covs as a a vector of columns, e.
 
 test<-fitmult(seal10[1:500,] ,2 ,c(8) ,2, 3)
 
-testvit <- viterbi(seal10[1:500,],test[[1]],c(8),3)
-
-testconf <- confints(test[[1]]) #hessian almost never invertible and if so NaN bc of sqrt(-...)
-#so i think hessian has also to be transformed back maybe?
