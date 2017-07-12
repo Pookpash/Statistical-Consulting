@@ -1,0 +1,36 @@
+
+### Funktion, die die gamma abh von der covariate und dem state (in dem man sich befindet) plottet
+
+# input: mod = modell bzw gammacube des modells?    Wie greift man auf den Gammacube zu???
+#       cov= covariate als Vektor zB data$temperature
+#       xlimm = Vektor mit zwei Zahlen zur Begrenzung der x-Achse
+#       N = # States
+
+plotgam <- function (mod,cov,xlim,N){ #zZ nur N=3 möglich
+    par(mfrow=c(1,N))
+###  gamma12 <- aus dem Gammacube die entspr Stelle, Vektor mit allen gamma12 (zu jedem ZP eins)
+###  gamma13 <- aus dem Gammacube 
+###  gamma11 <- 1-(gamma12+gamma13)
+    plot(cov,gamma12, xlab="covariate",ylab="probability",xlim=xlim,ylim=c(0,1),
+         col="blue", pch=15, main = "probability to change from State 1")
+    points(cov,gamma13,col="green",pch=16)
+    points(cov,gamma11,col="red",pch=17)
+###  gamma21 <- aus dem Gammacube die entspr Stelle, Vektor mit allen gamma21 (zu jedem ZP eins)
+###  gamma23 <- aus dem Gammacube 
+###  gamma22 <- 1-(gamma21+gamma23)
+    plot(cov,gamma22, xlab="covariate",ylab="probability",xlim=xlim,ylim=c(0,1), 
+         col="blue", pch=15,main = "probability to change from State 2")
+    points(cov,gamma23,col="green",pch=16)
+    points(cov,gamma21,col="red",pch=17)
+###  gamma31 <- aus dem Gammacube die entspr Stelle, Vektor mit allen gamma31 (zu jedem ZP eins)
+###  gamma32 <- aus dem Gammacube 
+###  gamma33 <- 1-(gamma31+gamma32)
+    plot(cov,gamma32, xlab="covariate",ylab="probability",xlim=xlim,ylim=c(0,1), 
+         col="blue", pch=15,main = "probability to change from State 3")
+    points(cov,gamma33,col="green",pch=16)
+    points(cov,gamma31,col="red",pch=17)
+}
+
+# red: prob to change to state 1 (gammax1)
+# blue: prob to change to state 2 (gammax2)
+# green: prob to change to state 3 (gammax3)
