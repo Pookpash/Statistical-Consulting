@@ -1,0 +1,100 @@
+setwd("C:/Users/User/Documents/Studium_MA/4. Semester/Statistical Consulting/R")
+
+library(circular) # for von Mises distribution
+
+
+##########################
+
+lforward <- function(obsl,mod,N){
+  lalpha.all <- rep(NA,sum(sapply(obsl,nrow)))
+  lalpha.list <- list()
+  for (i in 1:50){           #eigentlich length(obsl) aber error ab 51
+    obs <- obsl[[i]]
+  T <- dim(obs)[1]
+  lalpha <- matrix(NA,T,N)
+  #mumat <- conv2mat(mod,N,var=F)
+  #sigmat <- conv2mat(mod,N,var=T)
+  allprobs <- allprobs_rcpp(N,T,as.matrix(obs[,c(13,14,7,6,5)]),mod$mumat,mod$sigmat)
+  u <- mod$delta*allprobs[1,]  #hier noch delta ändern
+  l <- log(sum(u))
+  phi <- u/sum(u)   
+  lalpha[1,] <- l+log(phi)
+  
+  #new part for covariates
+  gammacube <- mod$gamma.array
+  for(t in 2:T) {                            
+    gammacube[,,T]
+    u <- phi%*%gammacube[,,T]*allprobs[t,]
+    #changes for covariates end here
+    l <- l+log(sum(u))
+    phi <- u/sum(u)
+    lalpha[t,] <- l+log(phi)
+  }
+  lalpha.list[[i]] <- lalpha
+  }
+  return(lalpha.list)
+}
+  
+psres <- function(obsl,mod,N){
+  surf.res.list <- list()
+  dive.res.list <- list()
+  max.res.list <- list()
+  step.res.list <- list()
+  angle.res.list <- list()
+  for (j in 1:50){                   #eigentlich length(obsl) aber error ab 50
+  obs <- obsl[[j]]
+  T <- dim(obs)[1]
+  surf.res <- rep(NA,T)
+  dive.res <- rep(NA,T)
+  max.res <- rep(NA,T)
+  step.res <- rep(NA,T)
+  angle.res <- rep(NA,T)
+  psurf <- matrix(NA,T,N)
+  pdive <- matrix(NA,T,N)
+  pmax <- matrix(NA,T,N)
+  pstep <- matrix(NA,T,N)
+  pangle <- matrix(NA,T,N)
+  la <- lforward(obsl,mod,N)
+  for(i in 1:N) {
+    for(t in 1:T) {
+      psurf[t,i] <- pgamma(obs[t,"surf.dur"],shape=mod$mu1[i]^2/mod$sigma1[i]^2,scale=mod$sigma1[i]^2/mod$mu1[i])
+      pdive[t,i] <- pgamma(obs[t,"dive.dur"],shape=mod$mu2[i]^2/mod$sigma2[i]^2,scale=mod$sigma2[i]^2/mod$mu2[i])
+      pmax[t,i] <- pgamma(obs[t,"max.dep"],shape=mod$mu3[i]^2/mod$sigma3[i]^2,scale=mod$sigma3[i]^2/mod$mu3[i])
+      pstep[t,i] <- pgamma(obs[t,"steplen"],shape=mod$mu4[i]^2/mod$sigma4[i]^2,scale=mod$sigma4[i]^2/mod$mu4[i])
+      #pangle[t,i] <- pvonmises(as.circular(obs[t,"angle"]),mu=mod$mu[i],kappa=mod$kappa[i])
+    }
+  }
+  surf.res[1] <- qnorm(mod$delta%*%psurf[1,]) 
+  dive.res[1] <- qnorm(mod$delta%*%pdive[1,])
+  max.res[1] <- qnorm(mod$delta%*%pmax[1,])
+  step.res[1] <- qnorm(mod$delta%*%pstep[1,])
+  angle.res[1] <- qnorm(mod$delta%*%pangle[1,])
+  for(t in 2:T) {
+    lat <- la[[j]][t-1,]  
+    c <- max(lat) 
+    elat <- exp(lat-c)
+    
+    #new part for covariates
+    gammacube <- mod$gamma.array
+    surf.res[t] <- qnorm(t(elat)%*%(gammacube[,,T]/sum(elat))%*%psurf[t,])
+    dive.res[t] <- qnorm(t(elat)%*%(gammacube[,,T]/sum(elat))%*%pdive[t,])
+    max.res[t] <- qnorm(t(elat)%*%(gammacube[,,T]/sum(elat))%*%pmax[t,])
+    step.res[t] <- qnorm(t(elat)%*%(gammacube[,,T]/sum(elat))%*%pstep[t,])
+    angle.res[t] <- qnorm(t(elat)%*%(gammacube[,,T]/sum(elat))%*%pangle[t,])
+    #changes for covariates end here
+    
+  }
+   surf.res.list[[j]] <- surf.res
+   dive.res.list[[j]] <- dive.res
+   max.res.list[[j]] <- max.res
+   step.res.list[[j]] <- step.res
+  angle.res.list[[j]] <- angle.res
+  }
+ surf.residuals <- unlist(surf.res.list)
+ dive.residuals <- unlist(dive.res.list)
+ max.residuals <- unlist(max.res.list)
+ step.residuals <- unlist(step.res.list)
+ angle.residuals <- unlist(angle.res.list)
+ return(list(surf.residuals=surf.residuals,dive.residuals=dive.residuals,max.residuals=max.residuals,step.residuals=step.residuals,angle.residuals=angle.residuals))
+}
+  
