@@ -1,22 +1,22 @@
 
-Patrick Daten standardieseren + rumschicken, (dist2coast; dist2h; dist2f; temp; salinty)
-Dorian residuen (w covs) nach obsl splitten, beide teilfunktionen
-Svenja tpm visualisieren
-Sina Konfidenzintervalle informieren (evtl. programmieren)
-Till delta implementieren + model fit
+Patrick Konfidenzintervalle (zurücktransformieren)
+Dorian Residuen 
+Svenja visualisierung t.p.m
+Sina Basismodell + erste (wahrscheinlich dist2haulout) covariate
+Till Parallelisierung 
 
-für die model fits (N = 3, subsamp = 10):
-Dorian dist2coast
-Sina dist2h
+für die model fits (N = 3, subsamp = 10): (MLLK am kleinsten!)
+Dorian dist2coast, heute noch, was übrig bleibt
+Sina salinity
 Svenja temp
-Patrick dist2f
-Till salinty, sex
+Patrick dist2fish
+Till sex
 
 generell:
 
-Viterbi
-Konfidenzintervalle?
-Visualisierung gammacube?
+plotting viterbi
+plotting residuals (noch nicht machbar)
+
 
 variable names
 steplength <- step
