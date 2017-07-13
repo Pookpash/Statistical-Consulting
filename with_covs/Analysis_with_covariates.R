@@ -64,7 +64,7 @@ mllk <- function(parvect,obsl,N,covs){ #covs as a a vector of columns, e.g. c(1,
   for(i in 1:length(obsl)){
     n <- length(obsl[[i]][,1])
     covsvec <- covsfix(obsl[[i]],covs)
-    covsvec <- c(c(rep(1,n)),covsvec)
+    covsvec <- c(rep(1,n),covsvec)
     covs.mat <- matrix(covsvec,ncol=length(covs)+1,byrow = F)
     gamma <- trMatrix_rcpp(N, lpn$beta, covs.mat)
     allprobs <- allprobs_rcpp(N,n,as.matrix(obsl[[i]][,c(13,14,7,6,5)]),mumat,sigmat) 
