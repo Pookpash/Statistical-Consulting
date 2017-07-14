@@ -103,7 +103,9 @@ viterbi<-function(obs,mod,covs,N){ #mod h.t.b. defined as mod[[x]] otherwise the
   obsl <- create_obslist(obs)
   for(i in 1:length(obsl)){
     n <- length(obsl[[i]][,1])
-    covs.mat <- matrix(c(rep(1,dim(obsl[[i]])[1]),obsl[[i]][,covs]),ncol=length(covs)+1,byrow = F)
+    covsvec <- covsfix(obsl[[i]],covs)
+    covsvec <- c(rep(1,n),covsvec)
+    covs.mat <- matrix(covsvec,ncol=length(covs)+1,byrow = F)
     gamma <- trMatrix_rcpp(N, beta, covs.mat)
     allprobs <- allprobs_rcpp(N,n,as.matrix(obsl[[i]][,c(13,14,7,6,5)]),mumat,sigmat)
     
@@ -157,8 +159,8 @@ fitmult <- function(obs,n_fits,covs,N){ #covs as a a vector of columns, e.g. c(1
   return(modl)
 }
 
-test<-fitmult(seal10[1:2000,],1,c(8,4),3)
+mod<-fitmult(seal10,10,c(8,4),3)
 
-testvit <- viterbi(seal10[1:500,],test[[1]],c(8),3)
+testvit <- viterbi(seal10,mod[[2]],c(8,4),3)
 
 testconf <- confints(test[[1]])
