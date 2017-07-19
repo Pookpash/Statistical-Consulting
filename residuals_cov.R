@@ -2,26 +2,20 @@ setwd("C:/Users/User/Documents/Studium_MA/4. Semester/Statistical Consulting/R")
 
 library(CircStats) # for von Mises distribution
 
-
-##########################
-
 lforward <- function(data,mod,N,covs){
   obsl <-  create_obslist(data)
   lalpha.all <- rep(NA,sum(sapply(obsl,nrow)))
   lalpha.list <- list()
   mumat <- t(conv2mat(mod,N,var=F))
   sigmat <- t(conv2mat(mod,N,var=T))
-  for (i in 1:length(obsl)){           #eigentlich length(obsl) aber error ab 51
+  for (i in 1:length(obsl)){
     n <- dim(obsl[[i]])[1]
     lalpha <- matrix(NA,n,N)
-    ###
     allprobs <- allprobs_rcpp(N,n,as.matrix(obsl[[i]][,c(13,14,7,6,5)]),mumat,sigmat)
-    ###
     covsvec <- covsfix(obsl[[i]],covs)
     covsvec <- c(rep(1,n),covsvec)
     covs.mat <- matrix(covsvec,ncol=length(covs)+1,byrow = F)
     gamma <- trMatrix_rcpp(N, mod$beta, covs.mat)
-    ###
     u <- mod$delta*allprobs[1,]
     l <- log(sum(u))
     phi <- u/sum(u)   
@@ -44,7 +38,7 @@ psres <- function(data,mod,N,covs){
   max.res.list <- c()
   step.res.list <- c()
   angle.res.list <- c()
-  for (j in 1:length(obsl)){                   #eigentlich length(obsl) aber error ab 50
+  for (j in 1:length(obsl)){
     obs <- obsl[[j]]
     n <- dim(obs)[1]
     covsvec <- covsfix(obsl[[j]],covs)
