@@ -146,6 +146,22 @@ covsfix <- function(obsli, covcols){
   return(X)
 }
 
+#function to compute the confidence intervalls to niveau alpha
+confints <- function(mod,N,alpha){
+  parvectwork <- c(log(mod$mu1),log(mod$mu2),log(mod$mu3),log(mod$mu4),log(mod$sigma1),log(mod$sigma2),log(mod$sigma3),log(mod$sigma4),log(mod$kappa),log(mod$delta),mod$beta) # transform the natural parameter to working for the hessian
+  H <- mod$hessmat
+  Hinv <- ginv(H)
+  CI <- matrix(NA,length(parvectwork),3)
+  for(k in 1:length(parvectwork)){
+  CIworking <- parvectwork[k] + sqrt(Hinv[k,k])*c(qnorm(alpha/2),0,qnorm(1-alpha/2))  #confidence intervall für working parameter
+  if(k <= 10*N)
+    CI[k,]<-exp(CIworking) #from working back to natural as in pw2pn
+  else
+    CI[k,]<-CIworking
+  }
+  return(CI)
+}
+
 #Code to run a specific N-state model multiple times with different starting values (with all 4 variables, adjust accordingly)
 # n_cov covariates and intercept
 fitmult <- function(obs,n_fits,covs,N){ #covs as a a vector of columns, e.g. c(1,2,5)]
