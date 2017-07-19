@@ -1,0 +1,63 @@
+
+### Funktion, die die Veränderung der gamma abh von der covariate und dem state, in dem man ist plottet
+
+# input: obs = daten
+#        mod = modell als mod[[i]]
+#        cov= covariate als Vektor zB c(11)
+#        N = # States
+# erst noch zusätzlich fie fkt covsfix einlesen
+
+
+covsfix <- function(obsli, covcols){
+    X <- obsli[,covcols[1]]
+    if(length(covcols)>1){
+        for (i in 2:length(covcols)){
+            X <- c(X,c(obsli[,covcols[i]]))
+        }
+    }
+    return(X)
+}
+
+plotgam <- function (obs,mod,covs,N){ #zZ nur N=3 möglich, covs als Vektor mit Spaltennummmer EINER cov
+    beta <- mod$beta
+    obsl <- create_obslist(obs)
+    for(i in 1:length(obsl)){
+        n <- length(obsl[[i]][,1])
+        covsvec <- covsfix(obsl[[i]],covs)
+        covsvec <- c(rep(1,n),covsvec)
+        covs.mat <- matrix(covsvec,ncol=length(covs)+1,byrow = F)
+        gamma <- trMatrix_rcpp(N, beta, covs.mat)
+    }
+    
+    par(mfrow=c(1,N))
+    gamma12 <- gamma[1,2,]
+    gamma13 <- gamma[1,3,]
+    gamma11 <- 1-(gamma12+gamma13)
+    plot(covs.mat[,2],gamma12, xlab="covariate",ylab="probability",ylim=c(0,1),
+         col="blue", pch=15, main = "probability to change from State 1")
+    points(covs.mat[,2],gamma13,col="green",pch=16)
+    points(covs.mat[,2],gamma11,col="red",pch=17)
+    
+    gamma21 <- gamma[2,1,]
+    gamma23 <- gamma[2,3,]
+    gamma22 <- 1-(gamma21+gamma23)
+    plot(covs.mat[,2],gamma22, xlab="covariate",ylab="probability",ylim=c(0,1), 
+         col="blue", pch=15,main = "probability to change from State 2")
+    points(covs.mat[,2],gamma23,col="green",pch=16)
+    points(covs.mat[,2],gamma21,col="red",pch=17)
+    
+    gamma31 <- gamma[3,1,]
+    gamma32 <- gamma[3,2,]
+    gamma33 <- 1-(gamma31+gamma32)
+    plot(covs.mat[,2],gamma32, xlab="covariate",ylab="probability",ylim=c(0,1), 
+         col="blue", pch=15,main = "probability to change from State 3")
+    points(covs.mat[,2],gamma33,col="green",pch=16)
+    points(covs.mat[,2],gamma31,col="red",pch=17)
+}
+
+# red: prob to change to state 1 (gammax1)
+# blue: prob to change to state 2 (gammax2)
+# green: prob to change to state 3 (gammax3)
+
+
+plotgam(obs=data,mod=res[[1]],covs=c(11),N=3)
