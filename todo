@@ -1,22 +1,13 @@
 
-Patrick Konfidenzintervalle (zurücktransformieren)
-Dorian Residuen 
+Patrick gamma + stationary für male/female, rest 0
+Dorian Workspace mit allen besten Modellen
 Svenja visualisierung t.p.m
-Sina Basismodell + erste (wahrscheinlich dist2haulout) covariate
-Till Parallelisierung 
-
-für die model fits (N = 3, subsamp = 10): (MLLK am kleinsten!)
-Dorian dist2coast, heute noch, was übrig bleibt
-Sina salinity
-Svenja temp
-Patrick dist2fish
-Till sex
+Sina Email Roland
+Till plotting residuals
 
 generell:
 
 plotting viterbi
-plotting residuals (noch nicht machbar)
-
 
 variable names
 steplength <- step
