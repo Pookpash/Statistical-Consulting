@@ -126,16 +126,6 @@ viterbi<-function(obs,mod,covs,N){ #mod h.t.b. defined as mod[[x]] otherwise the
   return(allStates)
 }
 
-confints <- function(mod){ #first just mu1 to test
-  muvec <- mod$mu1
-  fisher_info <- ginv(mod$hessmat)
-  prop_sigma<-sqrt(diag(fisher_info))
-  prop_sigma<-diag(prop_sigma)
-  upper<-muvec+1.96*prop_sigma[1:3]
-  lower<-muvec-1.96*prop_sigma[1:3]
-  interval<-data.frame(upper=upper, lower=lower)
-}
-
 covsfix <- function(obsli, covcols){
   X <- obsli[,covcols[1]]
   if(length(covcols)>1){
@@ -153,11 +143,12 @@ confints <- function(mod,N,alpha){
   Hinv <- ginv(H)
   CI <- matrix(NA,length(parvectwork),3)
   for(k in 1:length(parvectwork)){
-  CIworking <- parvectwork[k] + sqrt(Hinv[k,k])*c(qnorm(alpha/2),0,qnorm(1-alpha/2))  #confidence intervall für working parameter
-  if(k <= 10*N)
-    CI[k,]<-exp(CIworking) #from working back to natural as in pw2pn
-  else
-    CI[k,]<-CIworking
+    CIworking <- parvectwork[k] + sqrt(Hinv[k,k])*c(qnorm(alpha/2),0,qnorm(1-alpha/2))  #confidence intervall für working parameter
+    if(k <= 10*N){
+      CI[k,]<-exp(CIworking) #from working back to natural as in pw2pn
+    }else{
+      CI[k,]<-CIworking
+    } 
   }
   return(CI)
 }
