@@ -1,0 +1,15 @@
+-baseline model
+-state dep. dists
+-stationaries
+-t.p.m.
+-histogramm mixtures
+
+-advanced model
+-table likelihoods
+-state dep. dists
+-stationaries
+-gamma(covariates) male + female
+-histogram mixtures
+-KIs
+(-residuenplots)
+(-viterbi)
