@@ -4,7 +4,7 @@ require(MASS)
 
 setwd("C:/Users/Pook/Documents/Robben")
 seal10 <- read.csv("subsample_10scaled.csv",header=T)
-seal10 <- seal10[,c(1:13,20,14:19,21:25)] #13 step #20 turna
+seal10 <- seal10[,c(1:10,12,13,11,16,14,15,17:20)] #11 step #16 turna
 
 ## function that converts 'natural' parameters (possibly constrained) to 'working' parameters (all of which are real-valued) - this is only necessary since I use the unconstrained optimizer nlm() below 
 # mu & kappa: von Mises distr.
@@ -166,7 +166,7 @@ fitmult <- function(obs,n_fits,covs,N){ #covs as a a vector of columns, e.g. c(1
   return(modl)
 }
 
-mod1 <- fitmult(seal10,1,c(20),3)
+mod1 <- fitmult(seal10,1,c(17:20),3)
 
 testvit <- viterbi(seal10,mod[[2]],c(8,4),3)
 
